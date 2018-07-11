@@ -26,10 +26,12 @@ if __name__ == '__main__':
     except:
         pass
 
-    print('finished')
-
 # Joining both the train and vehicle dataframes with the journey data frames
 # Creates two dataframes, onw wth the train as a whole and one with the individual vehicles
 
 trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
 vehjournDf = journeyDf.join(vehicleDf, how='right')
+
+#Creating the new dataframe containing the required parameters
+
+infoDf = pd.DataFrame(columns= ('Parameter Name', 'Value') ) 

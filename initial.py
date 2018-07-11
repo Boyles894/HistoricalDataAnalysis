@@ -45,7 +45,13 @@ idno_date = np.array([idno_date[n_id-1][:8] for x in np.arange(n_id)])
 no_days = len(np.unique(idno_date))
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Days' , int(no_days)]
 
-#finding the first and last date ad adding those to the info dataframe
+#finding the first and last date and adding those to the info dataframe
 
 year = np.array([idno_date[n_id-1][:4] for x in np.arange(n_id)])
 year = np.array([int(x) for x in year])
+year = np.append(year, [2015, 2016, 2018])
+year = np.unique(year)
+year = np.sort(year)
+early_year = year[0]; late_year = year[-1]
+
+

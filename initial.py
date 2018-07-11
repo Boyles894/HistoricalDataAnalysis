@@ -48,9 +48,23 @@ infoDf.loc[infoDf.shape[0]+1] = ['Number of Days' , int(no_days)]
 #finding the first and last date and adding those to the info dataframe
 #Start by creating a new dataframe with only the dates of the journeys
 
-date = pd.DataFrame(data = [np.array([idno_date[n_id-1][:4] for x in np.arange(n_id)]), np.array([idno_date[n_id-1][4:6] for x in np.arange(n_id)]), np.array([idno_date[n_id-1][6:8] for x in np.arange(n_id)])])
+date = pd.DataFrame(data = [np.array([idno_date[n_id-1][:4] for x in np.arange(n_id)]), np.array([idno_date[n_id-1][4:6] for x in np.arange(n_id)]), np.array([idno_date[n_id-1][6:8] for x in np.arange(n_id)])], dtype='int64')
 date = date.transpose()
 date.columns = ['Year', 'Month', 'Day']
+date.loc[115] =[2010,8,24 ]
+date.loc[116] =[2019,10,24 ]
+date.loc[117] =[2019,10,25 ]
+max_year = (date.loc[date.Year == date.Year.max()])
+max_month = (max_year.loc[max_year.Month == max_year.Month.max()])
+max_date = (max_month.loc[max_month.Day == max_month.Day.max()])
+min_year = (date.loc[date.Year == date.Year.min()])
+min_month = (min_year.loc[min_year.Month == min_year.Month.min()])
+min_date = (min_month.loc[min_month.Day == min_month.Day.min()])
+print (min_date)
+print (max_date)
+
+
+
 
 
 

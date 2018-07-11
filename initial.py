@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime
 
 def indexDataFrame(df, indexColumns, retainCols=False):
     if retainCols == True:
@@ -51,17 +52,24 @@ infoDf.loc[infoDf.shape[0]+1] = ['Number of Days' , int(no_days)]
 date = pd.DataFrame(data = [np.array([idno_date[n_id-1][:4] for x in np.arange(n_id)]), np.array([idno_date[n_id-1][4:6] for x in np.arange(n_id)]), np.array([idno_date[n_id-1][6:8] for x in np.arange(n_id)])], dtype='int64')
 date = date.transpose()
 date.columns = ['Year', 'Month', 'Day']
-date.loc[115] =[2010,8,24 ]
-date.loc[116] =[2019,10,24 ]
-date.loc[117] =[2019,10,25 ]
+
+# Sort through the newly created dataframes by year, then month then day to find the earliest and latest dates
+
 max_year = (date.loc[date.Year == date.Year.max()])
 max_month = (max_year.loc[max_year.Month == max_year.Month.max()])
 max_date = (max_month.loc[max_month.Day == max_month.Day.max()])
 min_year = (date.loc[date.Year == date.Year.min()])
 min_month = (min_year.loc[min_year.Month == min_year.Month.min()])
 min_date = (min_month.loc[min_month.Day == min_month.Day.min()])
-print (min_date)
-print (max_date)
+
+#Format the date and add it to the info database
+
+max_date = max_date.reset_index()
+min_date = min_date.reset_index()
+max_date = datetime.date(max_date.Year.loc[0], max_date.Month.loc[0], max_date.Day.loc[0])
+min_date = datetime.date(min_date.Year.loc[0], min_date.Month.loc[0], min_date.Day.loc[0])
+infoDf.loc[infoDf.shape[0]+1] = ['Earliest Date' , min_date]
+infoDf.loc[infoDf.shape[0]+1] = ['Latest Date' , max_date]
 
 
 

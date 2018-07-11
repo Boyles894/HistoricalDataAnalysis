@@ -34,4 +34,15 @@ vehjournDf = journeyDf.join(vehicleDf, how='right')
 
 #Creating the new dataframe containing the required parameters
 
-infoDf = pd.DataFrame(columns= ('Parameter Name', 'Value') ) 
+infoDf = pd.DataFrame(columns= ('Parameter Name', 'Value')) 
+
+# calculating the number of days and adding to the info dataframe
+
+idDF = (trainjournDf.reset_index(drop=True).UniqueJourneyId)
+n_id = idDF.nunique()
+idno_date = idDF.unique()
+idno_date = np.array([idno_date[n_id-1][:8] for x in np.arange(n_id)])
+idno_date = np.array([int(x) for x in idno_date])
+print (type(idno_date[67]))
+no_days = len(np.unique(idno_date))
+infoDf.loc[1] = ['Number of Days' , no_days]

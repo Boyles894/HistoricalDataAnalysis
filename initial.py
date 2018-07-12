@@ -111,26 +111,36 @@ infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Manual Count Data', ((
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Manual Count' , trainjournDf.manualcount.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , trainjournDf.manualcount.std()]
 
-infoDf.set_index('Parameter Name', inplace=True, drop=True)
 
-# Looking at the metrics for the vehicles specifically    
+# Looking at the metrics for the vehicles specifically - the for loop iterates over the 'sequence' column and then checks if the data
+#is nan. This is done for the loadweigh, bluetooth and manualcount data   
 
-veh12 = 0
-veh8 = 0
-veh4 = 0
-for i in np.arange(vehjournDf.shape[0]):
-#    print (vehjournDf.index[i][2] == 0, vehjournDf.index[i-12][2] == 0, veh12  )
-    if vehjournDf.index[i][2] == 0 and vehjournDf.index[i-12][2] == 0 and sum(vehjournDf.loadweigh.iloc[i-12:i].isnull()) == 0:
-        veh12 = veh12 +1
-    elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-8][2] == 0 and sum(vehjournDf.loadweigh.iloc[i-8:i].isnull()) == 0:
-        veh8 = veh8+1
-    elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-4][2] == 0 and sum(vehjournDf.loadweigh.iloc[i-4:i].isnull()) == 0:
-        veh4=veh4+1
+for s in ['loadweigh', 'bluetooth', 'manualcount']:
+    veh12=0
+    veh8=0
+    veh4=0
+    for i in np.arange(vehjournDf.shape[0]):
+        if vehjournDf.index[i][2] == 0 and vehjournDf.index[i-12][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-12:i].isnull()) == 0:
+           veh12 = veh12 +1
+        elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-8][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-8:i].isnull()) == 0:
+            veh8 = veh8+1
+        elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-4][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-4:i].isnull()) == 0:
+            veh4=veh4+1
+    infoDf.loc[infoDf.shape[0]+1] = [s,veh12]
+    infoDf.loc[infoDf.shape[0]+1] = [s,veh8]
+    infoDf.loc[infoDf.shape[0]+1] = [s,veh4]
         
-        
-    
-    
-    
+infoDf.loc[28][0] = 'Trains made up of 12 units all giving loadweigh'       
+infoDf.loc[29][0] = 'Trains made up of 8 units all giving loadweigh'    
+infoDf.loc[30][0] = 'Trains made up of 4 units all giving loadweigh'
+infoDf.loc[31][0] = 'Trains made up of 12 units all giving bluetooth'
+infoDf.loc[32][0] = 'Trains made up of 8 units all giving bluetooth'
+infoDf.loc[33][0] = 'Trains made up of 4 units all giving bluetooth'
+infoDf.loc[34][0] = 'Trains made up of 12 units all giving manualcount'
+infoDf.loc[35][0] = 'Trains made up of 8 units all giving manualcount'    
+infoDf.loc[36][0] = 'Trains made up of 4 units all giving manualcount' 
 
+   
 
+ 
 

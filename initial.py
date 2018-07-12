@@ -113,17 +113,20 @@ infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , trainj
 
 infoDf.set_index('Parameter Name', inplace=True, drop=True)
 
-trainvehDf = trainDf.join(vehicleDf, how='right', rsuffix='veh')
-trainvehDf.drop(columns = 'adjustedFigure', inplace=True)
-trainvehDf.set_index('sequence', append=True, drop=True, inplace=True)    
+# Looking at the metrics for the vehicles specifically    
 
 veh12 = 0
 veh8 = 0
 veh4 = 0
-for i in np.arange(trainvehDf.shape[0]):
-    print (trainvehDf.index[i][2] == 0, trainvehDf.index[i-12][2] == 0, veh12  )
-    if trainvehDf.index[i][2] == 0 and trainvehDf.index[i-12][2] == 0 and sum(trainvehDf.loadweighveh.iloc[i-12:i].isnull()) == 0:
+for i in np.arange(vehjournDf.shape[0]):
+#    print (vehjournDf.index[i][2] == 0, vehjournDf.index[i-12][2] == 0, veh12  )
+    if vehjournDf.index[i][2] == 0 and vehjournDf.index[i-12][2] == 0 and sum(vehjournDf.loadweigh.iloc[i-12:i].isnull()) == 0:
         veh12 = veh12 +1
+    elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-8][2] == 0 and sum(vehjournDf.loadweigh.iloc[i-8:i].isnull()) == 0:
+        veh8 = veh8+1
+    elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-4][2] == 0 and sum(vehjournDf.loadweigh.iloc[i-4:i].isnull()) == 0:
+        veh4=veh4+1
+        
         
     
     

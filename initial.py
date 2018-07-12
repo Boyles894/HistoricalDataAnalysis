@@ -42,14 +42,14 @@ infoDf = pd.DataFrame(columns= ('Parameter Name', 'Value'))
 idDF = (trainjournDf.reset_index(drop=True).UniqueJourneyId)
 n_id = idDF.nunique()
 idno_date = idDF.unique()
-idno_date = np.array([idno_date[n_id-1][:8] for x in np.arange(n_id)])
+idno_date = np.array([idno_date[x][:8] for x in np.arange(n_id)])
 no_days = len(np.unique(idno_date))
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Days' , int(no_days)]
 
 #finding the first and last date and adding those to the info dataframe
 #Start by creating a new dataframe with only the dates of the journeys
 
-date = pd.DataFrame(data = [np.array([idno_date[n_id-1][:4] for x in np.arange(n_id)]), np.array([idno_date[n_id-1][4:6] for x in np.arange(n_id)]), np.array([idno_date[n_id-1][6:8] for x in np.arange(n_id)])], dtype='int64')
+date = pd.DataFrame(data = [np.array([idno_date[x][:4] for x in np.arange(n_id)]), np.array([idno_date[x][4:6] for x in np.arange(n_id)]), np.array([idno_date[x][6:8] for x in np.arange(n_id)])], dtype='int64')
 date = date.transpose()
 date.columns = ['Year', 'Month', 'Day']
 
@@ -71,7 +71,8 @@ min_date = datetime.date(min_date.Year.loc[0], min_date.Month.loc[0], min_date.D
 infoDf.loc[infoDf.shape[0]+1] = ['Earliest Date' , min_date]
 infoDf.loc[infoDf.shape[0]+1] = ['Latest Date' , max_date]
 
-
+delta = min_date - max_date
+delta = (np.abs(delta.days))
 
 
 

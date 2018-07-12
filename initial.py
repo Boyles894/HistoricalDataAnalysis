@@ -44,7 +44,7 @@ n_id = idDF.nunique()
 idno_date = idDF.unique()
 idno_date = np.array([idno_date[x][:8] for x in np.arange(n_id)])
 no_days = len(np.unique(idno_date))
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Days' , int(no_days)]
+infoDf.loc[infoDf.shape[0]+1] = ['No. of Days' , int(no_days)]
 
 #finding the first and last date and adding those to the info dataframe
 #Start by creating a new dataframe with only the dates of the journeys
@@ -75,18 +75,27 @@ infoDf.loc[infoDf.shape[0]+1] = ['Latest Date' , max_date]
 
 delta = min_date - max_date
 delta = (np.abs(delta.days))
-infoDf.loc[infoDf.shape[0]+1] = ['Percentage of Days with Data', (no_days/(delta+1))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Days with Data', (no_days/(delta+1))]
 
 #Adding number of journeys and number of legs to the infoDF
 
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Journeys', n_id]
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Journey Legs', trainjournDf.shape[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Average Number of Legs Per Journey',(trainjournDf.shape[0]/n_id)]
+infoDf.loc[infoDf.shape[0]+1] = ['No. of Journeys', n_id]
+infoDf.loc[infoDf.shape[0]+1] = ['No. of Journey Legs', trainjournDf.shape[0]]
+infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',(trainjournDf.shape[0]/n_id)]
 
+# Adding number of vehicle and train data points to ifoDF
 
-
-
-
+infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicles', (vehjournDf.shape[0])]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data', ((vehjournDf.loadweigh.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of "0" Loadweigh measurements', (sum(vehjournDf.loadweigh == 0))/(vehjournDf.shape[0])]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Loadweigh' , vehjournDf.loadweigh.mean()]
+infoDf.loc[infoDf.shape[0]+1] = ['Loadweigh Standard Deviaton' , vehjournDf.loadweigh.std()]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Bluetooth Data', ((vehjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Bluetooth' , vehjournDf.bluetooth.mean()]
+infoDf.loc[infoDf.shape[0]+1] = ['Bluetooth Standard Deviaton' , vehjournDf.bluetooth.std()]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Manual Count Data', ((vehjournDf.manualcount.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Manual Count' , vehjournDf.manualcount.mean()]
+infoDf.loc[infoDf.shape[0]+1] = ['Manual Count Standard Deviaton' , vehjournDf.manualcount.std()]
 
 
 

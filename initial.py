@@ -120,11 +120,11 @@ for s in ['loadweigh', 'bluetooth', 'manualcount']:
     veh8=0
     veh4=0
     for i in np.arange(vehjournDf.shape[0]):
-        if vehjournDf.index[i][2] == 0 and vehjournDf.index[i-12][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-12:i].isnull()) == 0:
+        if vehjournDf.index[i][2] == 0 and vehjournDf.index[i-12][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-12:i].isnull()) == 0 and sum(vehjournDf.loc[:,s].iloc[i-12:i]!=0) == 12:
            veh12 = veh12 +1
-        elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-8][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-8:i].isnull()) == 0:
+        elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-8][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-8:i].isnull()) == 0 and sum(vehjournDf.loc[:,s].iloc[i-8:i]!=0) == 8:
             veh8 = veh8+1
-        elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-4][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-4:i].isnull()) == 0:
+        elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-4][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-4:i].isnull()) == 0 and sum(vehjournDf.loc[:,s].iloc[i-4:i]!=0) == 4:
             veh4=veh4+1
     infoDf.loc[infoDf.shape[0]+1] = [s,veh12]
     infoDf.loc[infoDf.shape[0]+1] = [s,veh8]
@@ -140,7 +140,15 @@ infoDf.loc[34][0] = 'Trains made up of 12 units all giving manualcount'
 infoDf.loc[35][0] = 'Trains made up of 8 units all giving manualcount'    
 infoDf.loc[36][0] = 'Trains made up of 4 units all giving manualcount' 
 
-   
+#calculating how many trains have an incomplete dataset and adding it to infoDF
+missing_loadweigh = idDF.shape[0] - (infoDf.loc[28][1]+infoDf.loc[29][1]+infoDf.loc[30][1])  
+missing_bluetooth = idDF.shape[0] - (infoDf.loc[31][1]+infoDf.loc[32][1]+infoDf.loc[33][1])
+missing_manualcount = idDF.shape[0] - (infoDf.loc[34][1]+infoDf.loc[35][1]+infoDf.loc[36][1])
+infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete loadweigh data', missing_loadweigh]
+infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete bluetooth data', missing_bluetooth] 
+infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete manualcount data', missing_manualcount]
 
- 
+
+
+
 

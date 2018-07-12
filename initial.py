@@ -40,6 +40,7 @@ infoDf = pd.DataFrame(columns= ('Parameter Name', 'Value'))
 # calculating the number of days and adding to the info dataframe
 
 idDF = (trainjournDf.reset_index(drop=True).UniqueJourneyId)
+idDF.loc[199] = '201704287893648'
 n_id = idDF.nunique()
 idno_date = idDF.unique()
 idno_date = np.array([idno_date[x][:8] for x in np.arange(n_id)])
@@ -71,8 +72,13 @@ min_date = datetime.date(min_date.Year.loc[0], min_date.Month.loc[0], min_date.D
 infoDf.loc[infoDf.shape[0]+1] = ['Earliest Date' , min_date]
 infoDf.loc[infoDf.shape[0]+1] = ['Latest Date' , max_date]
 
+#finding the percentage of days with data and adding it to infoDF
+
 delta = min_date - max_date
 delta = (np.abs(delta.days))
+infoDf.loc[infoDf.shape[0]+1] = ['Percentage of Days with Data', (no_days/(delta+1))]
+
+
 
 
 

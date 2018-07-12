@@ -40,7 +40,6 @@ infoDf = pd.DataFrame(columns= ('Parameter Name', 'Value'))
 # calculating the number of days and adding to the info dataframe
 
 idDF = (trainjournDf.reset_index(drop=True).UniqueJourneyId)
-idDF.loc[199] = '201704287893648'
 n_id = idDF.nunique()
 idno_date = idDF.unique()
 idno_date = np.array([idno_date[x][:8] for x in np.arange(n_id)])
@@ -77,6 +76,13 @@ infoDf.loc[infoDf.shape[0]+1] = ['Latest Date' , max_date]
 delta = min_date - max_date
 delta = (np.abs(delta.days))
 infoDf.loc[infoDf.shape[0]+1] = ['Percentage of Days with Data', (no_days/(delta+1))]
+
+#Adding number of journeys and number of legs to the infoDF
+
+infoDf.loc[infoDf.shape[0]+1] = ['Number of Journeys', n_id]
+infoDf.loc[infoDf.shape[0]+1] = ['Number of Journey Legs', trainjournDf.shape[0]]
+infoDf.loc[infoDf.shape[0]+1] = ['Average Number of Legs Per Journey',(trainjournDf.shape[0]/n_id)]
+
 
 
 

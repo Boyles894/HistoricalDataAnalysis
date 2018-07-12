@@ -32,6 +32,8 @@ if __name__ == '__main__':
 
 trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
 vehjournDf = journeyDf.join(vehicleDf, how='right')
+vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+
 
 #Creating the new dataframe containing the required parameters
 
@@ -83,22 +85,49 @@ infoDf.loc[infoDf.shape[0]+1] = ['No. of Journeys', n_id]
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Journey Legs', trainjournDf.shape[0]]
 infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',(trainjournDf.shape[0]/n_id)]
 
-# Adding number of vehicle and train data points to ifoDF
+# Adding metric data per vehicle to ifoDF
 
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicles', (vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data', ((vehjournDf.loadweigh.notna().sum())/(vehjournDf.shape[0]))]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of "0" Loadweigh measurements', (sum(vehjournDf.loadweigh == 0))/(vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Loadweigh' , vehjournDf.loadweigh.mean()]
-infoDf.loc[infoDf.shape[0]+1] = ['Loadweigh Standard Deviaton' , vehjournDf.loadweigh.std()]
+infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Loadweigh Standard Deviaton' , vehjournDf.loadweigh.std()]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Bluetooth Data', ((vehjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0]))]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Bluetooth' , vehjournDf.bluetooth.mean()]
-infoDf.loc[infoDf.shape[0]+1] = ['Bluetooth Standard Deviaton' , vehjournDf.bluetooth.std()]
+infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Bluetooth Standard Deviaton' , vehjournDf.bluetooth.std()]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Manual Count Data', ((vehjournDf.manualcount.notna().sum())/(vehjournDf.shape[0]))]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Manual Count' , vehjournDf.manualcount.mean()]
-infoDf.loc[infoDf.shape[0]+1] = ['Manual Count Standard Deviaton' , vehjournDf.manualcount.std()]
+infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Manual Count Standard Deviaton' , vehjournDf.manualcount.std()]
 
+#adding metric data per train to infoDf
 
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Loadweigh Data', ((trainjournDf.loadweigh.notna().sum())/(trainjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Loadweigh' , trainjournDf.loadweigh.mean()]
+infoDf.loc[infoDf.shape[0]+1] = ['Train Loadweigh Standard Deviaton' , trainjournDf.loadweigh.std()]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Bluetooth Data', ((trainjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Bluetooth' , trainjournDf.bluetooth.mean()]
+infoDf.loc[infoDf.shape[0]+1] = ['Train Bluetooth Standard Deviaton' , trainjournDf.bluetooth.std()]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Manual Count Data', ((trainjournDf.manualcount.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Manual Count' , trainjournDf.manualcount.mean()]
+infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , trainjournDf.manualcount.std()]
 
+infoDf.set_index('Parameter Name', inplace=True, drop=True)
+
+trainvehDf = trainDf.join(vehicleDf, how='right', rsuffix='veh')
+trainvehDf.drop(columns = 'adjustedFigure', inplace=True)
+trainvehDf.set_index('sequence', append=True, drop=True, inplace=True)    
+
+veh12 = 0
+veh8 = 0
+veh4 = 0
+for i in np.arange(trainvehDf.shape[0]):
+    print (trainvehDf.index[i][2] == 0, trainvehDf.index[i-12][2] == 0, veh12  )
+    if trainvehDf.index[i][2] == 0 and trainvehDf.index[i-12][2] == 0 and sum(trainvehDf.loadweighveh.iloc[i-12:i].isnull()) == 0:
+        veh12 = veh12 +1
+        
+    
+    
+    
 
 
 

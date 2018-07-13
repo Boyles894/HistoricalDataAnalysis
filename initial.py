@@ -116,20 +116,9 @@ infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , trainj
 #is nan. This is done for the loadweigh, bluetooth and manualcount data   
 
 for s in ['loadweigh', 'bluetooth', 'manualcount']:
- #   sumsDf = (vehjournDf.loc[:,s].groupby(level=[0,1]).sum())     
-    countsDf = (vehjournDf.loc[:,s].groupby(level=[0,1]).count())
-    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 12 units all giving '+s ,sum(countsDf == 12)]
-    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,sum(countsDf == 8)]
-    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,sum(countsDf == 4)]
-    infoDf.loc[infoDf.shape[0]+1] = ['Number of trains missing complete '+ s +' data' ,idDF.shape[0] - (sum(countsDf == 4)+sum(countsDf==8)+sum(countsDf==12))]
-
-    
-    
-    
-    
-    
-    
-'''    
+    veh12=0
+    veh8=0
+    veh4=0
     for i in np.arange(vehjournDf.shape[0]):
         if vehjournDf.index[i][2] == 0 and vehjournDf.index[i-12][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-12:i].isnull()) == 0 and sum(vehjournDf.loc[:,s].iloc[i-12:i]!=0) == 12:
            veh12 = veh12 +1
@@ -148,4 +137,4 @@ missing_manualcount = int(idDF.shape[0] - (infoDf.set_index('Parameter Name', dr
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle loadweigh data', missing_loadweigh]
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle bluetooth data', missing_bluetooth] 
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle  manualcount data', missing_manualcount]
-'''
+

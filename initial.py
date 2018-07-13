@@ -130,11 +130,10 @@ for s in ['loadweigh', 'bluetooth', 'manualcount']:
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,veh8]
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,veh4]
         
-
 #calculating how many trains have an incomplete dataset and adding it to infoDF
-missing_loadweigh = idDF.shape[0] - (infoDf.loc[28][1]+infoDf.loc[29][1]+infoDf.loc[30][1])  
-missing_bluetooth = idDF.shape[0] - (infoDf.loc[31][1]+infoDf.loc[32][1]+infoDf.loc[33][1])
-missing_manualcount = idDF.shape[0] - (infoDf.loc[34][1]+infoDf.loc[35][1]+infoDf.loc[36][1])
+missing_loadweigh = int(idDF.shape[0] - (infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 12 units all giving loadweigh']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 8 units all giving loadweigh']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 4 units all giving loadweigh']))  
+missing_bluetooth = int(idDF.shape[0] - (infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 12 units all giving bluetooth']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 8 units all giving bluetooth']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 4 units all giving bluetooth']))
+missing_manualcount = int(idDF.shape[0] - (infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 12 units all giving manualcount']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 8 units all giving manualcount']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 4 units all giving manualcount']))
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle loadweigh data', missing_loadweigh]
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle bluetooth data', missing_bluetooth] 
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle  manualcount data', missing_manualcount]

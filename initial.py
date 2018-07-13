@@ -11,7 +11,7 @@ def indexDataFrame(df, indexColumns, retainCols=False):
 
 if __name__ == '__main__':
 
-    filepath = 'C:\\Users\\lwb1u18\\Internship\\Historical Data Analysis\\Datafiles\\26042017.h5'
+    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\HistoricalDataSnapshot20170418.h5'
 
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
@@ -147,8 +147,5 @@ missing_manualcount = idDF.shape[0] - (infoDf.loc[34][1]+infoDf.loc[35][1]+infoD
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle loadweigh data', missing_loadweigh]
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle bluetooth data', missing_bluetooth] 
 infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle  manualcount data', missing_manualcount]
-
-
-
 
 

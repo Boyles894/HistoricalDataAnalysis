@@ -87,7 +87,7 @@ infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',(trainjournDf
 
 # Adding metric data per vehicle to ifoDF
 
-infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicles', (vehjournDf.shape[0])]
+infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicle Legs', (vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data (Not NaN or 0)', ((vehjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0))) /(vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of "0" Loadweigh measurements', (sum(vehjournDf.loadweigh == 0))/(vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Loadweigh' , vehjournDf.loadweigh.mean()]
@@ -112,29 +112,11 @@ infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Manual Count' , trainjournDf.manual
 infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , trainjournDf.manualcount.std()]
 
 
-# Looking at the metrics for the vehicles specifically - the for loop iterates over the 'sequence' column and then checks if the data
-#is nan. This is done for the loadweigh, bluetooth and manualcount data   
+# Looking at the metrics for the vehicles specifically using groupby  
 
-for s in ['loadweigh', 'bluetooth', 'manualcount']:
-    veh12=0
-    veh8=0
-    veh4=0
-    for i in np.arange(vehjournDf.shape[0]):
-        if vehjournDf.index[i][2] == 0 and vehjournDf.index[i-12][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-12:i].isnull()) == 0 and sum(vehjournDf.loc[:,s].iloc[i-12:i]!=0) == 12:
-           veh12 = veh12 +1
-        elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-8][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-8:i].isnull()) == 0 and sum(vehjournDf.loc[:,s].iloc[i-8:i]!=0) == 8:
-            veh8 = veh8+1
-        elif vehjournDf.index[i][2] == 0 and vehjournDf.index[i-4][2] == 0 and sum(vehjournDf.loc[:, s].iloc[i-4:i].isnull()) == 0 and sum(vehjournDf.loc[:,s].iloc[i-4:i]!=0) == 4:
-            veh4=veh4+1
-    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 12 units all giving '+s ,veh12]
-    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,veh8]
-    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,veh4]
-        
-#calculating how many trains have an incomplete dataset and adding it to infoDF
-missing_loadweigh = int(idDF.shape[0] - (infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 12 units all giving loadweigh']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 8 units all giving loadweigh']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 4 units all giving loadweigh']))  
-missing_bluetooth = int(idDF.shape[0] - (infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 12 units all giving bluetooth']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 8 units all giving bluetooth']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 4 units all giving bluetooth']))
-missing_manualcount = int(idDF.shape[0] - (infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 12 units all giving manualcount']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 8 units all giving manualcount']+infoDf.set_index('Parameter Name', drop=True).loc['Trains made up of 4 units all giving manualcount']))
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle loadweigh data', missing_loadweigh]
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle bluetooth data', missing_bluetooth] 
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle  manualcount data', missing_manualcount]
-
+for s in ['loadweigh', 'bluetooth', 'manualcount']:    
+    countsDf = (vehjournDf.loc[:,s].groupby(level=[0,1]).count())
+    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 12 units all giving '+s ,sum(countsDf == 12)]
+    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,sum(countsDf == 8)]
+    infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,sum(countsDf == 4)]
+    infoDf.loc[infoDf.shape[0]+1] = ['Number of trains missing complete '+ s +' data' ,idDF.shape[0] - (sum(countsDf == 4)+sum(countsDf==8)+sum(countsDf==12))]

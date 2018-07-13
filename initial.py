@@ -88,7 +88,7 @@ infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',(trainjournDf
 # Adding metric data per vehicle to ifoDF
 
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicles', (vehjournDf.shape[0])]
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data (Not NaN or 0)', (vehjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0)) /(vehjournDf.shape[0])]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data (Not NaN or 0)', ((vehjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0))) /(vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of "0" Loadweigh measurements', (sum(vehjournDf.loadweigh == 0))/(vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Loadweigh' , vehjournDf.loadweigh.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Loadweigh Standard Deviaton' , vehjournDf.loadweigh.std()]

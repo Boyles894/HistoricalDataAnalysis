@@ -88,7 +88,7 @@ infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',(trainjournDf
 # Adding metric data per vehicle to ifoDF
 
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicles', (vehjournDf.shape[0])]
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data', ((vehjournDf.loadweigh.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data (Not NaN or 0)', (vehjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0)) /(vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of "0" Loadweigh measurements', (sum(vehjournDf.loadweigh == 0))/(vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Loadweigh' , vehjournDf.loadweigh.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Loadweigh Standard Deviaton' , vehjournDf.loadweigh.std()]
@@ -144,9 +144,9 @@ infoDf.loc[36][0] = 'Trains made up of 4 units all giving manualcount'
 missing_loadweigh = idDF.shape[0] - (infoDf.loc[28][1]+infoDf.loc[29][1]+infoDf.loc[30][1])  
 missing_bluetooth = idDF.shape[0] - (infoDf.loc[31][1]+infoDf.loc[32][1]+infoDf.loc[33][1])
 missing_manualcount = idDF.shape[0] - (infoDf.loc[34][1]+infoDf.loc[35][1]+infoDf.loc[36][1])
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete loadweigh data', missing_loadweigh]
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete bluetooth data', missing_bluetooth] 
-infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete manualcount data', missing_manualcount]
+infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle loadweigh data', missing_loadweigh]
+infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle bluetooth data', missing_bluetooth] 
+infoDf.loc[infoDf.shape[0]+1] = ['Number of Trains missing complete vehicle  manualcount data', missing_manualcount]
 
 
 

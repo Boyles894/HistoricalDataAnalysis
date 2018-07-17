@@ -85,7 +85,7 @@ infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Days with Data', format((no_days/(
 
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Journeys', n_id]
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Journey Legs', trainjournDf.shape[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',format((trainjournDf.shape[0]/n_id), '.2g')]
+infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',format((trainjournDf.shape[0]/n_id), '.3g')]
 
 # Adding metric data per vehicle to infoDF
 
@@ -122,3 +122,6 @@ for s in config['data_types']:
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,sum(countsDf == 8)]
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,sum(countsDf == 4)]
     infoDf.loc[infoDf.shape[0]+1] = ['Number of trains missing complete '+ s +' data' ,idDF.shape[0] - (sum(countsDf == 4)+sum(countsDf==8)+sum(countsDf==12))]
+
+infoDf.set_index('Parameter Name', inplace=True)
+infoDf.to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\InfoDF20180717.csv')

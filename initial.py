@@ -26,7 +26,7 @@ if __name__ == '__main__':
         pass
 
 # Joining both the train and vehicle dataframes with the journey data frames
-# Creates two dataframes, onw wth the train as a whole and one with the individual vehicles
+# Creates two dataframes, one wth the train as a whole and one with the individual vehicles - Also renames the loadweigh and buetooth columns
 
 trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
 vehjournDf = journeyDf.join(vehicleDf, how='right')
@@ -76,37 +76,37 @@ infoDf.loc[infoDf.shape[0]+1] = ['Latest Date' , max_date]
 
 delta = min_date - max_date
 delta = (np.abs(delta.days))
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Days with Data', (no_days/(delta+1))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Days with Data', format((no_days/(delta+1)), '.2g')]
 
 #Adding number of journeys and number of legs to the infoDF
 
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Journeys', n_id]
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Journey Legs', trainjournDf.shape[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',(trainjournDf.shape[0]/n_id)]
+infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',format((trainjournDf.shape[0]/n_id), '.2g')]
 
 # Adding metric data per vehicle to infoDF
 
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicle Legs', (vehjournDf.shape[0])]
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data (Not NaN or 0)', ((vehjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0))) /(vehjournDf.shape[0])]
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of "0" Loadweigh measurements', (sum(vehjournDf.loadweigh == 0))/(vehjournDf.shape[0])]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data (Not NaN or 0)', format(((vehjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0))) /(vehjournDf.shape[0]), '.2g')]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of "0" Loadweigh measurements', format((sum(vehjournDf.loadweigh == 0))/(vehjournDf.shape[0]), '.2g')]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Loadweigh' , vehjournDf.loadweigh.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Loadweigh Standard Deviaton' , vehjournDf.loadweigh.std()]
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Bluetooth Data', ((vehjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Bluetooth Data', format(((vehjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0])), '.2g')]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Bluetooth' , vehjournDf.bluetooth.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Bluetooth Standard Deviaton' , vehjournDf.bluetooth.std()]
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Manual Count Data', ((vehjournDf.manualcount.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Manual Count Data', format(((vehjournDf.manualcount.notna().sum())/(vehjournDf.shape[0])), '.2g')]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Manual Count' , vehjournDf.manualcount.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Manual Count Standard Deviaton' , vehjournDf.manualcount.std()]
 
 #adding metric data per train to infoDf
 
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Loadweigh Data', ((trainjournDf.loadweigh.notna().sum())/(trainjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Loadweigh Data (Not NaN or 0)', format(((trainjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0)))/(trainjournDf.shape[0]), '.2g')]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Loadweigh' , trainjournDf.loadweigh.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Train Loadweigh Standard Deviaton' , trainjournDf.loadweigh.std()]
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Bluetooth Data', ((trainjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Bluetooth Data', format(((trainjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0])), '.2g')]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Bluetooth' , trainjournDf.bluetooth.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Train Bluetooth Standard Deviaton' , trainjournDf.bluetooth.std()]
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Manual Count Data', ((trainjournDf.manualcount.notna().sum())/(vehjournDf.shape[0]))]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Manual Count Data', format(((trainjournDf.manualcount.notna().sum())/(vehjournDf.shape[0])), '.2g')]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Manual Count' , trainjournDf.manualcount.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , trainjournDf.manualcount.std()]
 

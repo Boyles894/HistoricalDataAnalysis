@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
+import yaml
+
+config = yaml.load(open("config.yml", 'r'))
 
 
 def indexDataFrame(df, indexColumns, retainCols=False):
@@ -113,7 +116,7 @@ infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , trainj
 
 # Looking at the metrics for the vehicles specifically using groupby  
 
-for s in ['loadweigh', 'bluetooth', 'manualcount']:    
+for s in config['data_types']:    
     countsDf = (vehjournDf.loc[:,s].groupby(level=[0,1]).count())
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 12 units all giving '+s ,sum(countsDf == 12)]
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,sum(countsDf == 8)]

@@ -12,7 +12,7 @@ def indexDataFrame(df, indexColumns, retainCols=False):
 
 if __name__ == '__main__':
 
-    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata1.h5'
+    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180717.h5'
 
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
@@ -45,7 +45,7 @@ n_id = idDF.nunique()
 idno_date = idDF.unique()
 idno_date = np.array([idno_date[x][:8] for x in np.arange(n_id)])
 no_days = len(np.unique(idno_date))
-infoDf.loc[infoDf.shape[0]+1] = ['No. of Days' , int(no_days)]
+infoDf.loc[infoDf.shape[0]+1] = ['No. of Days With Data' , int(no_days)]
 
 #finding the first and last date and adding those to the info dataframe
 #Start by creating a new dataframe with only the dates of the journeys
@@ -100,7 +100,7 @@ infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Manual Count Standard Deviaton' , vehj
 
 #adding metric data per train to infoDf
 
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Loadweigh Data (Not NaN or 0)', format(((trainjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0)))/(trainjournDf.shape[0]), '.2g')]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Loadweigh Data (Not NaN or 0)', format(((trainjournDf.loadweigh.notna().sum())-(sum(trainjournDf.loadweigh == 0)))/(trainjournDf.shape[0]), '.2g')]
 infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Loadweigh' , trainjournDf.loadweigh.mean()]
 infoDf.loc[infoDf.shape[0]+1] = ['Train Loadweigh Standard Deviaton' , trainjournDf.loadweigh.std()]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Bluetooth Data', format(((trainjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0])), '.2g')]

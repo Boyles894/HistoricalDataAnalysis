@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime
 
+
 def indexDataFrame(df, indexColumns, retainCols=False):
     if retainCols == True:
         df.set_index(indexColumns, drop=False, inplace=True)
@@ -11,13 +12,10 @@ def indexDataFrame(df, indexColumns, retainCols=False):
 
 if __name__ == '__main__':
 
-    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\HistoricalDataSnapshot20170418.h5'
+    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata1.h5'
 
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
-    # Note that one of the leg indexes (TiplocIndex) is used in model calibration
-    # and must therefore be retained as a separate column.  Hence for the journey
-    # dataframe, the columns are not dropped
     indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
     vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
     indexDataFrame(vehicleDf, indexes.tolist(), retainCols=False)
@@ -33,7 +31,8 @@ if __name__ == '__main__':
 trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
 vehjournDf = journeyDf.join(vehicleDf, how='right')
 vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
-
+trainjournDf.rename(columns = {'loadweigh.kg':'loadweigh', 'bluetooth.devices':'bluetooth'}, inplace=True)
+vehjournDf.rename(columns = {'loadweigh.kg':'loadweigh', 'bluetooth.devices':'bluetooth'}, inplace=True)
 
 #Creating the new dataframe containing the required parameters
 
@@ -85,7 +84,7 @@ infoDf.loc[infoDf.shape[0]+1] = ['No. of Journeys', n_id]
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Journey Legs', trainjournDf.shape[0]]
 infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',(trainjournDf.shape[0]/n_id)]
 
-# Adding metric data per vehicle to ifoDF
+# Adding metric data per vehicle to infoDF
 
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicle Legs', (vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data (Not NaN or 0)', ((vehjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0))) /(vehjournDf.shape[0])]

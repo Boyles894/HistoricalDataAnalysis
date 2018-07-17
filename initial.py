@@ -92,26 +92,26 @@ infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',format((train
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Vehicle Legs', (vehjournDf.shape[0])]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Loadweigh Data (Not NaN or 0)', format(((vehjournDf.loadweigh.notna().sum())-(sum(vehjournDf.loadweigh == 0))) /(vehjournDf.shape[0]), '.2g')]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of "0" Vehicle Loadweigh measurements', format((sum(vehjournDf.loadweigh == 0))/(vehjournDf.shape[0]), '.2g')]
-infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Loadweigh' , vehjournDf.loadweigh.groupby(vehjournDf.loadweigh == 0).mean().iloc[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Loadweigh Standard Deviaton' , vehjournDf.loadweigh.groupby(vehjournDf.loadweigh == 0).std().iloc[0]]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Loadweigh' , format(vehjournDf.loadweigh.groupby(vehjournDf.loadweigh == 0).mean().iloc[0], '.2f')]
+infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Loadweigh Standard Deviaton' , format(vehjournDf.loadweigh.groupby(vehjournDf.loadweigh == 0).std().iloc[0], '.2f')]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Bluetooth Data', format(((vehjournDf.bluetooth.notna().sum())/(vehjournDf.shape[0])), '.2g')]
-infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Bluetooth' ,  vehjournDf.bluetooth.groupby(vehjournDf.bluetooth == 0).mean().iloc[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Bluetooth Standard Deviaton' , vehjournDf.bluetooth.groupby(vehjournDf.bluetooth == 0).std().iloc[0]]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Bluetooth' ,  format(vehjournDf.bluetooth.groupby(vehjournDf.bluetooth == 0).mean().iloc[0], '.2f')]
+infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Bluetooth Standard Deviaton' , format(vehjournDf.bluetooth.groupby(vehjournDf.bluetooth == 0).std().iloc[0], '.2f')]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Vehicles with Manual Count Data', format(((vehjournDf.manualcount.notna().sum())/(vehjournDf.shape[0])), '.2g')]
-infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Manual Count' , vehjournDf.manualcount.groupby(vehjournDf.manualcount == 0).mean().iloc[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Manual Count Standard Deviaton' , vehjournDf.manualcount.groupby(vehjournDf.manualcount == 0).std().iloc[0]]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Vehicle Manual Count' , format(vehjournDf.manualcount.groupby(vehjournDf.manualcount == 0).mean().iloc[0], '.2f')]
+infoDf.loc[infoDf.shape[0]+1] = ['Vehicle Manual Count Standard Deviaton' , format(vehjournDf.manualcount.groupby(vehjournDf.manualcount == 0).std().iloc[0], '.2f')]
 
 #adding metric data per train to infoDf
 
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Loadweigh Data (Not NaN or 0)', format(((trainjournDf.loadweigh.notna().sum())-(sum(trainjournDf.loadweigh == 0)))/(trainjournDf.shape[0]), '.2g')]
-infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Loadweigh' , trainjournDf.loadweigh.groupby(trainjournDf.loadweigh == 0).mean().iloc[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Train Loadweigh Standard Deviaton' , trainjournDf.loadweigh.groupby(trainjournDf.loadweigh == 0).std().iloc[0]]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Loadweigh' , format(trainjournDf.loadweigh.groupby(trainjournDf.loadweigh == 0).mean().iloc[0], '.2f')]
+infoDf.loc[infoDf.shape[0]+1] = ['Train Loadweigh Standard Deviaton' , format(trainjournDf.loadweigh.groupby(trainjournDf.loadweigh == 0).std().iloc[0], '.2f')]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Bluetooth Data', format(((trainjournDf.bluetooth.notna().sum()-(sum(trainjournDf.bluetooth == 0)))/(trainjournDf.shape[0])), '.2g')]
-infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Bluetooth' , trainjournDf.bluetooth.groupby(trainjournDf.bluetooth == 0).mean().iloc[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Train Bluetooth Standard Deviaton' , trainjournDf.bluetooth.groupby(trainjournDf.bluetooth == 0).std().iloc[0]]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Bluetooth' , format(trainjournDf.bluetooth.groupby(trainjournDf.bluetooth == 0).mean().iloc[0], '.2f')]
+infoDf.loc[infoDf.shape[0]+1] = ['Train Bluetooth Standard Deviaton' , format(trainjournDf.bluetooth.groupby(trainjournDf.bluetooth == 0).std().iloc[0], '.2f')]
 infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Trains with Manual Count Data', format(((trainjournDf.manualcount.notna().sum()-(sum(trainjournDf.manualcount == 0)))/(trainjournDf.shape[0])), '.2g')]
-infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Manual Count' , trainjournDf.manualcount.groupby(trainjournDf.manualcount == 0).mean().iloc[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , trainjournDf.manualcount.groupby(trainjournDf.manualcount == 0).std().iloc[0]]
+infoDf.loc[infoDf.shape[0]+1] = ['Mean Train Manual Count' , format(trainjournDf.manualcount.groupby(trainjournDf.manualcount == 0).mean().iloc[0], '.2f')]
+infoDf.loc[infoDf.shape[0]+1] = ['Train Manual Count Standard Deviaton' , format(trainjournDf.manualcount.groupby(trainjournDf.manualcount == 0).std().iloc[0], '.2f')]
 
 
 # Looking at the metrics for the vehicles specifically using groupby  

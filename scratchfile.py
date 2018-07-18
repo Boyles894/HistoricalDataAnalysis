@@ -42,8 +42,8 @@ if __name__ == '__main__':
 
     metrics = ['loadweigh.kg', 'bluetooth.devices']
     
-    #filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180717.h5'
-    filepath = './datafiles/cddb.h5'
+    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180717.h5'
+    #filepath = './datafiles/cddb.h5'
 
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
@@ -57,7 +57,7 @@ if __name__ == '__main__':
         pass
 
 
-filepath = './datafiles/cddb.h5'
+#filepath = './datafiles/cddb.h5'
 
 indexes = pd.read_hdf(filepath, 'indexes')
 journeyDf = pd.read_hdf(filepath, 'journeyDf')

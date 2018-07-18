@@ -6,6 +6,7 @@ import yaml
 
 config = yaml.load(open("config.yml", 'r'))
 
+f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
 
 def indexDataFrame(df, indexColumns, retainCols=False):
     if retainCols == True:
@@ -28,8 +29,11 @@ if __name__ == '__main__':
     except:
         pass
 
-# Joining both the train and vehicle dataframes with the journey data frames
+# Joining both the train and vehicle dataframes with the journey data frames, also adds a date column
 # Creates two dataframes, one wth the train as a whole and one with the individual vehicles - Also renames the loadweigh and buetooth columns
+        
+journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
+journeyDf['date'] = pd.to_datetime(journeyDf['date'])
 
 trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
 vehjournDf = journeyDf.join(vehicleDf, how='right')
@@ -37,55 +41,28 @@ vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
 trainjournDf.rename(columns = {'loadweigh.kg':'loadweigh', 'bluetooth.devices':'bluetooth'}, inplace=True)
 vehjournDf.rename(columns = {'loadweigh.kg':'loadweigh', 'bluetooth.devices':'bluetooth'}, inplace=True)
 
+# Selects only a certain range of dates to be included in the analysis 
+#vehjournDf = vehjournDf.loc[vehjournDf['date'] <= '2018-05-23']
+#trainjournDf = trainjournDf.loc[trainjournDf['date'] <= '2018-05-23']
+
 #Creating the new dataframe containing the required parameters
 
 infoDf = pd.DataFrame(columns= ('Parameter Name', 'Value')) 
 
-# calculating the number of days and adding to the info dataframe
+# Adding the date information
 
-idDF = (trainjournDf.reset_index(drop=True).UniqueJourneyId)
-n_id = idDF.nunique()
-idno_date = idDF.unique()
-idno_date = np.array([idno_date[x][:8] for x in np.arange(n_id)])
-no_days = len(np.unique(idno_date))
-infoDf.loc[infoDf.shape[0]+1] = ['No. of Days With Data' , int(no_days)]
-
-#finding the first and last date and adding those to the info dataframe
-#Start by creating a new dataframe with only the dates of the journeys
-
-date = pd.DataFrame(data = [np.array([idno_date[x][:4] for x in np.arange(n_id)]), np.array([idno_date[x][4:6] for x in np.arange(n_id)]), np.array([idno_date[x][6:8] for x in np.arange(n_id)])], dtype='int64')
-date = date.transpose()
-date.columns = ['Year', 'Month', 'Day']
-
-# Sort through the newly created dataframes by year, then month then day to find the earliest and latest dates
-
-max_year = (date.loc[date.Year == date.Year.max()])
-max_month = (max_year.loc[max_year.Month == max_year.Month.max()])
-max_date = (max_month.loc[max_month.Day == max_month.Day.max()])
-min_year = (date.loc[date.Year == date.Year.min()])
-min_month = (min_year.loc[min_year.Month == min_year.Month.min()])
-min_date = (min_month.loc[min_month.Day == min_month.Day.min()])
-
-#Format the date and add it to the info database
-
-max_date = max_date.reset_index()
-min_date = min_date.reset_index()
-max_date = datetime.date(max_date.Year.loc[0], max_date.Month.loc[0], max_date.Day.loc[0])
-min_date = datetime.date(min_date.Year.loc[0], min_date.Month.loc[0], min_date.Day.loc[0])
-infoDf.loc[infoDf.shape[0]+1] = ['Earliest Date' , min_date]
-infoDf.loc[infoDf.shape[0]+1] = ['Latest Date' , max_date]
-
-#finding the percentage of days with data and adding it to infoDF
-
-delta = min_date - max_date
+infoDf.loc[infoDf.shape[0]+1] = ['No. of Days With Data' , trainjournDf.date.nunique()]
+infoDf.loc[infoDf.shape[0]+1] = ['Earliest Date', min(trainjournDf.date).date()]
+infoDf.loc[infoDf.shape[0]+1] = ['Earliest Date', max(trainjournDf.date).date()]
+delta = min(trainjournDf.date).date() - max(trainjournDf.date).date()
 delta = (np.abs(delta.days))
-infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Days with Data', format((no_days/(delta+1)), '.2g')]
+infoDf.loc[infoDf.shape[0]+1] = ['Fraction of Days with Data', format((trainjournDf.date.nunique()/(delta+1)), '.2g')]
 
 #Adding number of journeys and number of legs to the infoDF
 
-infoDf.loc[infoDf.shape[0]+1] = ['No. of Journeys', n_id]
+infoDf.loc[infoDf.shape[0]+1] = ['No. of Journeys', trainjournDf.UniqueJourneyId.nunique()]
 infoDf.loc[infoDf.shape[0]+1] = ['No. of Journey Legs', trainjournDf.shape[0]]
-infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',format((trainjournDf.shape[0]/n_id), '.3g')]
+infoDf.loc[infoDf.shape[0]+1] = ['Average No. of Legs Per Journey',format((trainjournDf.shape[0]/trainjournDf.UniqueJourneyId.nunique()), '.3g')]
 
 # Adding metric data per vehicle to infoDF
 
@@ -121,7 +98,7 @@ for s in config['data_types']:
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 12 units all giving '+s ,sum(countsDf == 12)]
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,sum(countsDf == 8)]
     infoDf.loc[infoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,sum(countsDf == 4)]
-    infoDf.loc[infoDf.shape[0]+1] = ['Number of trains missing complete '+ s +' data' ,idDF.shape[0] - (sum(countsDf == 4)+sum(countsDf==8)+sum(countsDf==12))]
+    infoDf.loc[infoDf.shape[0]+1] = ['Number of trains missing complete '+ s +' data' ,trainjournDf.shape[0] - (sum(countsDf == 4)+sum(countsDf==8)+sum(countsDf==12))]
 
 infoDf.set_index('Parameter Name', inplace=True)
-infoDf.to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\InfoDF20180717.csv')
+infoDf.to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\InfoDf-before-20180523.csv')

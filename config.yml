@@ -1,6 +1,6 @@
 data_types:
-- loadweigh
-- bluetooth
+- loadweigh.kg
+- bluetooth.devices
 - manualcount
 
 dataframes:

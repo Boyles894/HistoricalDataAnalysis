@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jul 18 09:38:08 2018
-
-@author: jap1e09
-"""
-
 import pandas as pd
+import yaml
+config = yaml.load(open("config.yml", 'r'))
 
 def indexDataFrame(df, indexColumns, retainCols=False):
     if retainCols == True:
@@ -37,13 +32,9 @@ class Descriptives():
         self.zero_percent = round(100*self.zero_count / self.total_count,2)
         
         
-
 if __name__ == '__main__':
-
-    metrics = ['loadweigh.kg', 'bluetooth.devices']
     
-    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180717.h5'
-    #filepath = './datafiles/cddb.h5'
+    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\HistoricalDataSnapshot20170418.h5'
 
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
@@ -56,23 +47,9 @@ if __name__ == '__main__':
     except:
         pass
 
-
-#filepath = './datafiles/cddb.h5'
-
-indexes = pd.read_hdf(filepath, 'indexes')
-journeyDf = pd.read_hdf(filepath, 'journeyDf')
-indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
-vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
-indexDataFrame(vehicleDf, indexes.tolist(), retainCols=False)
-try:
-    trainDf = pd.read_hdf(filepath, 'trainDf')
-    indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
-except:
-    pass
-
 metric_descriptives = {}
 
-for metric in metrics:
+for metric in config['data_types']:
     if metric in vehicleDf.columns:
         metric_descriptives[metric] = Descriptives(vehicleDf[metric])
 

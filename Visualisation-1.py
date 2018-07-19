@@ -16,7 +16,7 @@ def indexDataFrame(df, indexColumns, retainCols=False):
         
 if __name__ == '__main__':
 
-    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\HistoricalDataSnapshot20170418.h5'
+    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180717.h5'
 
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
@@ -34,8 +34,21 @@ journeyDf['date'] = pd.to_datetime(journeyDf['date'])
 trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
 vehjournDf = journeyDf.join(vehicleDf, how='right')
 vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
-trainjournDf.rename(columns={'loadweigh':'loadweigh.kg' , 'bluetooth':'bluetooth.devices'})
-vehjournDf.rename(columns={'loadweigh':'loadweigh.kg' , 'bluetooth':'bluetooth.devices'})
+trainjournDf.rename(columns={'loadweigh':'loadweigh.kg' , 'bluetooth':'bluetooth.devices'}, inplace=True)
+vehjournDf.rename(columns={'loadweigh':'loadweigh.kg' , 'bluetooth':'bluetooth.devices'}, inplace=True)
+vehjournDf = vehjournDf.loc[(vehjournDf['date'] <= str(config['splitdate']))]
+trainjournDf = trainjournDf.loc[(trainjournDf['date'] <= str(config['splitdate']))]
+    
 
 
-plt.plot(trainjournDf.loadweigh.loc[trainjournDf['tiploc'] == 'VICTRIC'], trainjournDf.FiveMin.loc[trainjournDf['tiploc'] == 'VICTRIC'])
+
+
+Victric_lo = trainjournDf.reset_index(drop=True).set_index('FiveMin')
+Victric_lo.index = Victric_lo.index.astype(int)
+Victric_lo.sort_index(ascending=True, axis=0, inplace=True)
+Victric_lo = Victric_lo.loc[Victric_lo['tiploc'] == 'VICTRIC']
+
+g = Victric_lo.loc[:,'loadweigh.kg'].groupby(Victric_lo.index).mean()
+g.plot(color='black')
+#Victric_lo['loadweigh.kg'].plot(linestyle='none', marker='x', markersize=0.5, color='red')
+plt.ylim(0,60000)

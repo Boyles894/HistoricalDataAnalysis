@@ -3,6 +3,6 @@ data_types:
 - bluetooth.devices
 - manualcount
 
-dataframes:
-- train
-- veh
+startdate : 2000-01-01 
+splitdate : 2018-05-23
+enddate : 2050-01-01

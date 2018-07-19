@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import datetime
 import yaml
 
@@ -31,6 +30,45 @@ class Descriptives():
         self.zero_count = zero_readings.size
         self.zero_percent = round(100*self.zero_count / self.total_count,2)
 
+def GetAnalytics(vehDf, traDf, Startdate, Enddate):
+    vehDf = vehDf.loc[(vehDf['date'] >= str(Startdate)) & (vehDf['date'] <= str(Enddate))]
+    traDf = traDf.loc[(traDf['date'] >= str(Startdate)) & (traDf['date'] <= str(Enddate))]
+    
+    geninfoDf = pd.DataFrame(columns= ('Parameter Name', 'Value')) 
+    geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Days With Data' , traDf.date.nunique()]
+    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Earliest Date', min(traDf.date).date()]
+    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Earliest Date', max(traDf.date).date()]
+    delta = min(traDf.date).date() - max(traDf.date).date()
+    delta = (np.abs(delta.days))
+    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Fraction of Days with Data', format((traDf.date.nunique()/(delta+1)), '.2g')]
+    
+    geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Journeys', traDf.UniqueJourneyId.nunique()]
+    geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Journey Legs', traDf.shape[0]]
+    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Average No. of Legs Per Journey',format((traDf.shape[0]/traDf.UniqueJourneyId.nunique()), '.3g')]
+ 
+    for s in config['data_types']:    
+        countsDf = (vehDf.loc[:,s].groupby(level=[0,1]).count())
+        geninfoDf.loc[geninfoDf.shape[0]+1] = ['Trains made up of 12 units all giving '+s ,sum(countsDf == 12)]
+        geninfoDf.loc[geninfoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,sum(countsDf == 8)]
+        geninfoDf.loc[geninfoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,sum(countsDf == 4)]
+        geninfoDf.loc[geninfoDf.shape[0]+1] = ['Number of trains missing complete '+ s +' data' ,traDf.shape[0] - (sum(countsDf == 4)+sum(countsDf==8)+sum(countsDf==12))]
+    
+    metric_descriptives = pd.DataFrame()
+    for metric in config['data_types']:
+        sez =pd.Series()
+        for attr_name in dir(Descriptives(vehDf[metric])):
+            if attr_name[0] != '_':
+                attr_value = getattr(Descriptives(vehDf[metric]), attr_name)
+                sez.loc[attr_name] = attr_value
+        metric_descriptives = pd.concat([metric_descriptives, sez], axis=1, sort=False)
+        metric_descriptives.rename(index=str, columns={0:metric,}, inplace=True)
+    
+    geninfoDf.set_index('Parameter Name', inplace=True) 
+    return geninfoDf, metric_descriptives
+
+
+#----------------------------------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
     filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180717.h5'
@@ -53,45 +91,17 @@ trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
 vehjournDf = journeyDf.join(vehicleDf, how='right')
 vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
 
-# Selects only a certain range of dates to be included in the analysis 
-vehjournDf = vehjournDf.loc[vehjournDf['date'] >= '2018-05-23']
-trainjournDf = trainjournDf.loc[trainjournDf['date'] >= '2018-05-23']
+allgeninfoDf, allmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['enddate'])
+befgeninfoDf, befmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])
+aftgeninfoDf, aftmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['splitdate'], config['enddate'])
+  
+geninfoDf = pd.concat([allgeninfoDf, befgeninfoDf, aftgeninfoDf], axis=1)
+geninfoDf.columns=['Full Data Range', 'Data before '+str(config['splitdate']), 'Data after '+str(config['splitdate'])]
 
-
-geninfoDf = pd.DataFrame(columns= ('Parameter Name', 'Value')) 
-
-geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Days With Data' , trainjournDf.date.nunique()]
-geninfoDf.loc[geninfoDf.shape[0]+1] = ['Earliest Date', min(trainjournDf.date).date()]
-geninfoDf.loc[geninfoDf.shape[0]+1] = ['Earliest Date', max(trainjournDf.date).date()]
-delta = min(trainjournDf.date).date() - max(trainjournDf.date).date()
-delta = (np.abs(delta.days))
-geninfoDf.loc[geninfoDf.shape[0]+1] = ['Fraction of Days with Data', format((trainjournDf.date.nunique()/(delta+1)), '.2g')]
-
-geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Journeys', trainjournDf.UniqueJourneyId.nunique()]
-geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Journey Legs', trainjournDf.shape[0]]
-geninfoDf.loc[geninfoDf.shape[0]+1] = ['Average No. of Legs Per Journey',format((trainjournDf.shape[0]/trainjournDf.UniqueJourneyId.nunique()), '.3g')]
- 
-for s in config['data_types']:    
-    countsDf = (vehjournDf.loc[:,s].groupby(level=[0,1]).count())
-    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Trains made up of 12 units all giving '+s ,sum(countsDf == 12)]
-    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Trains made up of 8 units all giving '+s ,sum(countsDf == 8)]
-    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,sum(countsDf == 4)]
-    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Number of trains missing complete '+ s +' data' ,trainjournDf.shape[0] - (sum(countsDf == 4)+sum(countsDf==8)+sum(countsDf==12))]
-
-#geninfoDf.set_index('Parameter Name', inplace=True)
-#geninfoDf.to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\geninfoDf-before-20180523.csv')
-
-metric_descriptives = pd.DataFrame()
-
+metric_dfs={}
 for metric in config['data_types']:
-    sez =pd.Series()
-    for attr_name in dir(Descriptives(vehjournDf[metric])):
-        if attr_name[0] != '_':
-            attr_value = getattr(Descriptives(vehjournDf[metric]), attr_name)
-            sez.loc[attr_name] = attr_value
-    metric_descriptives = pd.concat([metric_descriptives, sez], axis=1, sort=False)
-    metric_descriptives.rename(index=str, columns={0:metric,}, inplace=True)
-    
-   
+    metric_dfs[metric] = pd.concat([allmetric_descriptives[metric], befmetric_descriptives[metric], aftmetric_descriptives[metric]], axis=1)
+    metric_dfs[metric].columns=['Full Data Range', 'Data before '+str(config['splitdate']), 'Data after '+str(config['splitdate'])]
+    metric_dfs[metric].to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\ '+str(metric)+'infoDf-19072018.csv')
 
-
+geninfoDf.to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\geninfoDf-19072018.csv')

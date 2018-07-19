@@ -66,7 +66,6 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate):
     geninfoDf.set_index('Parameter Name', inplace=True) 
     return geninfoDf, metric_descriptives
 
-
 #----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -102,6 +101,6 @@ metric_dfs={}
 for metric in config['data_types']:
     metric_dfs[metric] = pd.concat([allmetric_descriptives[metric], befmetric_descriptives[metric], aftmetric_descriptives[metric]], axis=1)
     metric_dfs[metric].columns=['Full Data Range', 'Data before '+str(config['splitdate']), 'Data after '+str(config['splitdate'])]
-    metric_dfs[metric].to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\ '+str(metric)+'infoDf-19072018.csv')
+    #metric_dfs[metric].to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\ '+str(metric)+'infoDf-19072018.csv')
 
-geninfoDf.to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\geninfoDf-19072018.csv')
+#geninfoDf.to_csv('C:\\Users\\lwb1u18\\Internship\Analytics Dataframes\geninfoDf-19072018.csv')

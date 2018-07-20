@@ -1,3 +1,6 @@
+datafilepath: ./datafiles/
+datafilename: FullDataSet20180720.h5
+
 data_types:
 - loadweigh.kg
 - bluetooth.devices

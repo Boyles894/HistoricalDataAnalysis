@@ -1,11 +1,17 @@
 import pandas as pd
 import numpy as np
 import datetime
+import os
 import yaml
 
-filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
+config_file = os.path.normpath('./config.yml')
+config = yaml.load(open(config_file, 'r'))
 
-config = yaml.load(open("config.yml", 'r'))
+filepath = os.path.normpath(config['datafilepath'] + config['datafilename'])
+
+#filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
+
+
 
 f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
 

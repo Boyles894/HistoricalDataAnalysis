@@ -19,9 +19,7 @@ def indexDataFrame(df, indexColumns, retainCols=False):
         df.set_index(indexColumns, drop=True, inplace=True)
         
 def create_Dfs(filepath):
-    #Function to extract date from rid
-    f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
-    
+
     #Read in raw dataframes and index columns from datafile
     #Index dataframes accordingly
     #The assumption is that the datafile will contain the correct dataframes
@@ -33,13 +31,22 @@ def create_Dfs(filepath):
     trainDf = pd.read_hdf(filepath, 'trainDf')
     indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
 
-    #journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
-    #journeyDf['date'] = pd.to_datetime(journeyDf['date'])
-    journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
+    # Check to see if journeyDf contains a 'date' column.  If not, generate one from the
+    # UniqueJourneyId (assumed to be the rid).
+    if 'date' in journeyDf.columns.tolist():
+        pass
+    else:
+        # Function to extract date from rid
+        f = lambda x: datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
+        journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
 
+    #Build complete train/journey dataframe
     trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
+
+    #Build complete vehicle/journey dataframe
     vehjournDf = journeyDf.join(vehicleDf, how='right')
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+
     return trainjournDf, vehjournDf
         
 class Descriptives():

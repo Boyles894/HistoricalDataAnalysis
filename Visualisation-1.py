@@ -2,12 +2,14 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 import datetime
+import os
 import yaml
 pd.options.mode.chained_assignment = None
 
-filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
+config_file = os.path.normpath('./config.yml')
+config = yaml.load(open(config_file, 'r'))
 
-config = yaml.load(open("config.yml", 'r'))
+filepath = os.path.normpath(config['datafilepath'] + config['datafilename'])
 
 f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
     
@@ -58,12 +60,12 @@ def plot_loadweigh(Df, plot_name, save=False):
 
 trainjournDf, vehjournDf = create_Dfs(filepath)
 
-plt_1 = trainjournDf.reset_index(drop=True).set_index('FiveMin')
-plt_1.index = plt_1.index.astype(int)
-plt_1.sort_index(ascending=True, axis=0, inplace=True)
+min_ix = trainjournDf.reset_index(drop=True).set_index('FiveMin')
+min_ix.index = min_ix.index.astype(int)
+min_ix.sort_index(ascending=True, axis=0, inplace=True)
 plots={}
 for station in config['stations']:
-    plots[station] = plt_1.loc[plt_1['tiploc'] == station]
+    plots[station] = min_ix.loc[min_ix['tiploc'] == station]
     if station == 'GTWK':
         plots[station].loc[:, 'northbound'] = np.nan
         for i in np.arange(plots['GTWK'].shape[0]):

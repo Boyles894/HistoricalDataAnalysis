@@ -9,9 +9,6 @@ config = yaml.load(open(config_file, 'r'))
 
 filepath = os.path.normpath(config['datafilepath'] + config['datafilename'])
 
-#filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
-
-
 
 f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
 
@@ -96,7 +93,6 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate):
 #----------------------------------------------------------------------------------------------------------------------
 
 trainjournDf, vehjournDf = create_Dfs(filepath)
-
 allgeninfoDf, allmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['enddate'])
 befgeninfoDf, befmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])
 aftgeninfoDf, aftmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['splitdate'], config['enddate'])

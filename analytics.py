@@ -12,9 +12,6 @@ filepath = os.path.normpath(config['datafilepath'] + config['datafilename'])
 #filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
 
 
-
-f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
-
 def indexDataFrame(df, indexColumns, retainCols=False):
     if retainCols == True:
         df.set_index(indexColumns, drop=False, inplace=True)
@@ -22,6 +19,12 @@ def indexDataFrame(df, indexColumns, retainCols=False):
         df.set_index(indexColumns, drop=True, inplace=True)
         
 def create_Dfs(filepath):
+    #Function to extract date from rid
+    f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
+    
+    #Read in raw dataframes and index columns from datafile
+    #Index dataframes accordingly
+    #The assumption is that the datafile will contain the correct dataframes
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
     indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
@@ -32,6 +35,7 @@ def create_Dfs(filepath):
         indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
     except:
         pass
+    
     journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
     journeyDf['date'] = pd.to_datetime(journeyDf['date'])
     trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')

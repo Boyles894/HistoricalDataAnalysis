@@ -15,6 +15,25 @@ def indexDataFrame(df, indexColumns, retainCols=False):
     else:
         df.set_index(indexColumns, drop=True, inplace=True)
         
+def create_Dfs(filepath):
+    if __name__ == '__main__':
+        indexes = pd.read_hdf(filepath, 'indexes')
+        journeyDf = pd.read_hdf(filepath, 'journeyDf')
+        indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
+        vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
+        indexDataFrame(vehicleDf, indexes.tolist(), retainCols=False)
+        try:
+            trainDf = pd.read_hdf(filepath, 'trainDf')
+            indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
+        except:
+            pass
+    journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
+    journeyDf['date'] = pd.to_datetime(journeyDf['date'])
+    trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
+    vehjournDf = journeyDf.join(vehicleDf, how='right')
+    vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+    return trainjournDf, vehjournDf
+        
 class Descriptives():
     def __init__(self, data_series,missing_data_value = -1):
         self.total_count = data_series.size
@@ -42,7 +61,7 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate):
     geninfoDf.loc[geninfoDf.shape[0]+1] = ['Earliest Date', max(traDf.date).date()]
     delta = min(traDf.date).date() - max(traDf.date).date()
     delta = (np.abs(delta.days))
-    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Fraction of Days with Data', format((traDf.date.nunique()/(delta+1)), '.2g')]
+    geninfoDf.loc[geninfoDf.shape[0]+1] = ['Fraction of Days with Data', format((traDf.date.nunique()/(delta+1)), '.3g')]
     
     geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Journeys', traDf.UniqueJourneyId.nunique()]
     geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Journey Legs', traDf.shape[0]]
@@ -70,25 +89,7 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate):
 
 #----------------------------------------------------------------------------------------------------------------------
 
-if __name__ == '__main__':
-
-    indexes = pd.read_hdf(filepath, 'indexes')
-    journeyDf = pd.read_hdf(filepath, 'journeyDf')
-    indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
-    vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
-    indexDataFrame(vehicleDf, indexes.tolist(), retainCols=False)
-    try:
-        trainDf = pd.read_hdf(filepath, 'trainDf')
-        indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
-    except:
-        pass
-        
-journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
-journeyDf['date'] = pd.to_datetime(journeyDf['date'])
-
-trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
-vehjournDf = journeyDf.join(vehicleDf, how='right')
-vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+trainjournDf, vehjournDf = create_Dfs(filepath)
 
 allgeninfoDf, allmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['enddate'])
 befgeninfoDf, befmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])

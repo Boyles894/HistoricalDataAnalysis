@@ -60,23 +60,24 @@ for station in config['stations']:
         plots['southbound'+station] = plots[station].loc[plots[station]['northbound']==False]
             
             
-def plot_loadweigh(Df, plot_name):
+def plot_loadweigh(Df, plot_name, save=False):
     avg = Df.loc[:,'loadweigh.kg'].groupby(Df.index).mean()
     avg.plot(color='black', linestyle='none', marker='o')
     Df['loadweigh.kg'].plot(linestyle='none', marker='x', markersize=0.5, color='red')
     plt.ylim(0,avg.max()+(avg.max()/4))
     plt.ylabel('Loadweigh (kg)')
     plt.xlabel('Time of day in 5 minute intervals')
-    plt.title()
+    plt.title(plot_name)
     plt.show()
+    if save==True:
+        plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\ '+plot_name+'.png')
     plt.clf()
  
     
-plot_loadweigh(plots['VICTRIC'], 'London Victoria')   
-plot_loadweigh(plots['BRGHTN'], 'Brighton')    
-plot_loadweigh(plots['northboundGTWK'], 'Gatwick Northbound')    
-plot_loadweigh(plots['southboundGTWK'], 'Gatwick Southbound') 
-
+plot_loadweigh(plots['VICTRIC'], 'London Victoria', save=True)   
+plot_loadweigh(plots['BRGHTN'], 'Brighton', save=True)    
+plot_loadweigh(plots['northboundGTWK'], 'Gatwick Northbound', save=True)    
+plot_loadweigh(plots['southboundGTWK'], 'Gatwick Southbound', save=True) 
 
 
 

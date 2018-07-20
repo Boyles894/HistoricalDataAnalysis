@@ -30,11 +30,9 @@ def create_Dfs(filepath):
     indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
     vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
     indexDataFrame(vehicleDf, indexes.tolist(), retainCols=False)
-    try:
-        trainDf = pd.read_hdf(filepath, 'trainDf')
-        indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
-    except:
-        pass
+    trainDf = pd.read_hdf(filepath, 'trainDf')
+    indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
+
     
     journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
     journeyDf['date'] = pd.to_datetime(journeyDf['date'])

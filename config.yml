@@ -6,3 +6,8 @@ data_types:
 startdate : 2000-01-01 
 splitdate : 2018-05-23
 enddate : 2050-01-01
+
+stations:
+- VICTRIC
+- GTWK
+- BRGHTN

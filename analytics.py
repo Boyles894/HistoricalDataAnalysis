@@ -3,6 +3,8 @@ import numpy as np
 import datetime
 import yaml
 
+filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
+
 config = yaml.load(open("config.yml", 'r'))
 
 f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
@@ -19,8 +21,8 @@ class Descriptives():
         values = data_series.dropna()
         self.non_null_count = values.size
         self.non_null_percent = round(100*self.non_null_count / self.total_count,2)
-        non_missing_data = values != missing_data_value
-        values = values[non_missing_data]      
+        non_missing_data_mask = values != missing_data_value
+        values = values[non_missing_data_mask]      
         self.useful_count = values.size
         self.useful_percent = round(100*self.useful_count / self.total_count,2)
         self.mean = round(values.mean(),2)
@@ -69,8 +71,6 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate):
 #----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
-    filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180717.h5'
 
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')

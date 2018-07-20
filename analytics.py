@@ -33,9 +33,10 @@ def create_Dfs(filepath):
     trainDf = pd.read_hdf(filepath, 'trainDf')
     indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
 
-    
-    journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
-    journeyDf['date'] = pd.to_datetime(journeyDf['date'])
+    #journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
+    #journeyDf['date'] = pd.to_datetime(journeyDf['date'])
+    journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
+
     trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
     vehjournDf = journeyDf.join(vehicleDf, how='right')
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)

@@ -14,3 +14,12 @@ stations:
 - VICTRIC
 - GTWK
 - BRGHTN
+
+weekdays:
+- Monday
+- Tuesday
+- Wednesday
+- Thursday
+- Friday
+- Saturday
+- Sunday

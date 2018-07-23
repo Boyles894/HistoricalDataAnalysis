@@ -9,8 +9,8 @@ config = yaml.load(open(config_file, 'r'))
 
 filepath = os.path.normpath(config['datafilepath'] + config['datafilename'])
 
+#filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
 
-f = lambda x : datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
 
 def indexDataFrame(df, indexColumns, retainCols=False):
     if retainCols == True:
@@ -19,22 +19,34 @@ def indexDataFrame(df, indexColumns, retainCols=False):
         df.set_index(indexColumns, drop=True, inplace=True)
         
 def create_Dfs(filepath):
-    if __name__ == '__main__':
-        indexes = pd.read_hdf(filepath, 'indexes')
-        journeyDf = pd.read_hdf(filepath, 'journeyDf')
-        indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
-        vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
-        indexDataFrame(vehicleDf, indexes.tolist(), retainCols=False)
-        try:
-            trainDf = pd.read_hdf(filepath, 'trainDf')
-            indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
-        except:
-            pass
-    journeyDf.insert(4, 'date', journeyDf.UniqueJourneyId.apply(f))
-    journeyDf['date'] = pd.to_datetime(journeyDf['date'])
+
+    #Read in raw dataframes and index columns from datafile
+    #Index dataframes accordingly
+    #The assumption is that the datafile will contain the correct dataframes
+    indexes = pd.read_hdf(filepath, 'indexes')
+    journeyDf = pd.read_hdf(filepath, 'journeyDf')
+    indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
+    vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
+    indexDataFrame(vehicleDf, indexes.tolist(), retainCols=False)
+    trainDf = pd.read_hdf(filepath, 'trainDf')
+    indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
+
+    # Check to see if journeyDf contains a 'date' column.  If not, generate one from the
+    # UniqueJourneyId (assumed to be the rid).
+    if 'date' in journeyDf.columns.tolist():
+        pass
+    else:
+        # Function to extract date from rid
+        f = lambda x: datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
+        journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
+
+    #Build complete train/journey dataframe
     trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
+
+    #Build complete vehicle/journey dataframe
     vehjournDf = journeyDf.join(vehicleDf, how='right')
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+
     return trainjournDf, vehjournDf
         
 class Descriptives():
@@ -93,6 +105,7 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate):
 #----------------------------------------------------------------------------------------------------------------------
 
 trainjournDf, vehjournDf = create_Dfs(filepath)
+
 allgeninfoDf, allmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['enddate'])
 befgeninfoDf, befmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])
 aftgeninfoDf, aftmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['splitdate'], config['enddate'])

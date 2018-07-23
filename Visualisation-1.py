@@ -46,8 +46,10 @@ def select_dates(vehDf, traDf, Startdate, Enddate):
     
 def plot_loadweigh(Df, plot_name, save=False):
     avg = Df.loc[:,'loadweigh.kg'].groupby(Df.index).mean()
-    avg.plot(color='black', linestyle='none', marker='o')
-    Df['loadweigh.kg'].plot(linestyle='none', marker='x', markersize=0.5, color='red')
+    std = Df.loc[:,'loadweigh.kg'].groupby(Df.index).std()
+    avg.plot(color='black', linestyle='none', marker='o', yerr = std,)
+#    Df['loadweigh.kg'].plot(linestyle='none', marker='x', markersize=0.5, color='red')
+    plt.grid()
     plt.ylim(0,avg.max()+(avg.max()/4))
     plt.ylabel('Loadweigh (kg)')
     plt.xlabel('Time of day in 5 minute intervals')
@@ -60,12 +62,14 @@ def plot_loadweigh(Df, plot_name, save=False):
 
 trainjournDf, vehjournDf = create_Dfs(filepath)
 
-min_ix = trainjournDf.reset_index(drop=True).set_index('FiveMin')
-min_ix.index = min_ix.index.astype(int)
-min_ix.sort_index(ascending=True, axis=0, inplace=True)
+select_dates(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])
+
+fivemin_ix = trainjournDf.reset_index(drop=True).set_index('FiveMin')
+fivemin_ix.index = fivemin_ix.index.astype(int)
+fivemin_ix.sort_index(ascending=True, axis=0, inplace=True)
 plots={}
 for station in config['stations']:
-    plots[station] = min_ix.loc[min_ix['tiploc'] == station]
+    plots[station] = fivemin_ix.loc[fivemin_ix['tiploc'] == station]
     if station == 'GTWK':
         plots[station].loc[:, 'northbound'] = np.nan
         for i in np.arange(plots['GTWK'].shape[0]):
@@ -75,12 +79,26 @@ for station in config['stations']:
                 plots[station].loc[:, 'northbound'].iloc[i] = False
         plots['northbound'+station] = plots[station].loc[plots[station]['northbound']==True]
         plots['southbound'+station] = plots[station].loc[plots[station]['northbound']==False]
-
+        del plots['GTWK']
+        
     
-plot_loadweigh(plots['VICTRIC'], 'London Victoria', save=True)   
-plot_loadweigh(plots['BRGHTN'], 'Brighton' ,save=True)    
-plot_loadweigh(plots['northboundGTWK'], 'Gatwick Northbound', save=True)    
-plot_loadweigh(plots['southboundGTWK'], 'Gatwick Southbound', save=True) 
+#plot_loadweigh(plots['VICTRIC'], 'London Victoria')   
+#plot_loadweigh(plots['BRGHTN'], 'Brighton' )    
+#plot_loadweigh(plots['northboundGTWK'], 'Gatwick Northbound' )    
+#plot_loadweigh(plots['southboundGTWK'], 'Gatwick Southbound')
+        
+        
+for station in plots:
+    plots[station].loc[:, 'weekday'] = plots[station]['date'].dt.weekday_name
+    
+weekdays = plots['VICTRIC'].groupby(plots['VICTRIC']['weekday'])
+    
+
+     
+        
+    
+        
+        
 
 
 

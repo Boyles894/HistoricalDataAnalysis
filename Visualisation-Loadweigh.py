@@ -95,7 +95,7 @@ def create_weekday_plots(save=False):
             try:
                 plot_weekday(weekday_plots[station+'_'+day], station+' on a '+day)
                 if save==True:
-                    plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\ '+station+' on a '+day+'.png')
+                    plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\\'+station+ '\ '+station+' on a '+day+'.png')
                 plt.show()
             except KeyError:
                 pass
@@ -115,10 +115,10 @@ for station in config['stations']:
         plots['southbound'+station] = plots[station].loc[plots[station]['northbound']==False]
         del plots[station]
         
-#plot_loadweigh(plots['VICTRIC'], 'London Victoria')   
-#plot_loadweigh(plots['BRGHTN'], 'Brighton' )    
-#plot_loadweigh(plots['northboundGTWK'], 'Gatwick Northbound' )    
-#plot_loadweigh(plots['southboundGTWK'], 'Gatwick Southbound')
+plot_loadweigh(plots['VICTRIC'], 'London Victoria')   
+plot_loadweigh(plots['BRGHTN'], 'Brighton', )    
+plot_loadweigh(plots['northboundGTWK'], 'Gatwick Northbound',)    
+plot_loadweigh(plots['southboundGTWK'], 'Gatwick Southbound',)
         
 
 weekday_plots = {}
@@ -128,5 +128,33 @@ for station in plots:
         weekday_plots[station+'_'+day] = plots[station].loc[plots[station]['weekday'] == day]
         if weekday_plots[station+'_'+day].shape[0]==0:
             del weekday_plots[station+'_'+day]
-            
-create_weekday_plots()
+
+
+for station in plots:
+    for day in config['weekdays']:
+        try:
+            avg = weekday_plots[station+'_'+day].loc[:,'loadweigh.kg'].groupby(weekday_plots[station+'_'+day]['FiveMin'].astype(int)).mean()
+            avg.iloc[avg.nonzero()].plot(linestyle='none', marker='x', label=day)
+        except KeyError:
+            pass
+    plt.ylim(0,6000)
+    plt.ylabel('loadweigh')
+    plt.title(station)
+    plt.legend()
+#    plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\\'+station+ '\\'+station+'.png')
+    plt.show()
+    
+   
+
+
+
+
+
+
+
+
+
+
+
+
+    

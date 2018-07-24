@@ -49,7 +49,7 @@ def index_df(df, indexColumns, retainCols=False):
     else:
         df.set_index(indexColumns, drop=True, inplace=True)
         
-def build_dfs_from_file(filepath):
+def build_frames_from_file(filepath):
 
     #Read in raw dataframes and index columns from datafile
     #Index dataframes accordingly
@@ -80,9 +80,21 @@ def build_dfs_from_file(filepath):
 
     return trainjournDf, vehjournDf
 
+def filter_df_by_date(df, start_date,end_date):
+    if 'date' not in df.columns:
+        print('Dataframe has no date column')
+        return df
+
+    mask = (df['date'] >= str(start_date)) & (df['date'] <= str(end_date))
+    return df[mask]
+
+
+
 def GetAnalytics(vehDf, traDf, Startdate, Enddate):
-    vehDf = vehDf.loc[(vehDf['date'] >= str(Startdate)) & (vehDf['date'] <= str(Enddate))]
-    traDf = traDf.loc[(traDf['date'] >= str(Startdate)) & (traDf['date'] <= str(Enddate))]
+    #vehDf = vehDf.loc[(vehDf['date'] >= str(Startdate)) & (vehDf['date'] <= str(Enddate))]
+    #traDf = traDf.loc[(traDf['date'] >= str(Startdate)) & (traDf['date'] <= str(Enddate))]
+    vehDf = filter_df_by_date(vehDf,Startdate,Enddate)
+    traDf = filter_df_by_date(traDf,Startdate,Enddate)
     
     geninfoDf = pd.DataFrame(columns= ('Parameter Name', 'Value')) 
     geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Days With Data' , traDf.date.nunique()]
@@ -118,7 +130,7 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate):
 
 #----------------------------------------------------------------------------------------------------------------------
 
-trainjournDf, vehjournDf = build_dfs_from_file(filepath)
+trainjournDf, vehjournDf = build_frames_from_file(filepath)
 
 allgeninfoDf, allmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['enddate'])
 befgeninfoDf, befmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])

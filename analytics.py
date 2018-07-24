@@ -11,25 +11,56 @@ filepath = os.path.normpath(config['datafilepath'] + config['datafilename'])
 
 #filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
 
+class Descriptives():
+    def __init__(self, data_series, drop_zeros = True, missing_data_value = -1):
+        self.total_count = data_series.size
 
-def indexDataFrame(df, indexColumns, retainCols=False):
+        #Drop null values
+        values = data_series.dropna()
+        self.non_null_count = values.size
+        self.non_null_percent = round(100*self.non_null_count / self.total_count,2)
+
+        #Drop known missing data
+        non_missing_data_mask = values != missing_data_value
+        values = values[non_missing_data_mask]
+
+        #Get information about zero readings
+        zero_readings = values[values == 0]
+        self.zero_count = zero_readings.size
+        self.zero_percent = round(100 * self.zero_count / self.total_count, 2)
+
+        if drop_zeros is True:
+            non_zero_mask = values != 0
+            values = values[non_zero_mask]
+
+        self.useful_count = values.size
+        self.useful_percent = round(100*self.useful_count / self.total_count,2)
+        self.mean = round(values.mean(),2)
+        self.median = values.median()
+        self.firstqpercentile = values.quantile(0.25)
+        self.lastqpercentile = values.quantile(0.75)
+        self.iq_range = self.lastqpercentile - self.firstqpercentile
+        self.std = round(values.std(),2)
+
+
+def index_df(df, indexColumns, retainCols=False):
     if retainCols == True:
         df.set_index(indexColumns, drop=False, inplace=True)
     else:
         df.set_index(indexColumns, drop=True, inplace=True)
         
-def create_Dfs(filepath):
+def build_dfs_from_file(filepath):
 
     #Read in raw dataframes and index columns from datafile
     #Index dataframes accordingly
     #The assumption is that the datafile will contain the correct dataframes
     indexes = pd.read_hdf(filepath, 'indexes')
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
-    indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
+    index_df(journeyDf, indexes.tolist(), retainCols=True)
     vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
-    indexDataFrame(vehicleDf, indexes.tolist(), retainCols=False)
+    index_df(vehicleDf, indexes.tolist(), retainCols=False)
     trainDf = pd.read_hdf(filepath, 'trainDf')
-    indexDataFrame(trainDf, indexes.tolist(), retainCols=False)
+    index_df(trainDf, indexes.tolist(), retainCols=False)
 
     # Check to see if journeyDf contains a 'date' column.  If not, generate one from the
     # UniqueJourneyId (assumed to be the rid).
@@ -48,23 +79,6 @@ def create_Dfs(filepath):
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
 
     return trainjournDf, vehjournDf
-        
-class Descriptives():
-    def __init__(self, data_series,missing_data_value = -1):
-        self.total_count = data_series.size
-        values = data_series.dropna()
-        self.non_null_count = values.size
-        self.non_null_percent = round(100*self.non_null_count / self.total_count,2)
-        non_missing_data_mask = values != missing_data_value
-        values = values[non_missing_data_mask]      
-        self.useful_count = values.size
-        self.useful_percent = round(100*self.useful_count / self.total_count,2)
-        self.mean = round(values.mean(),2)
-        self.median = values.median()
-        self.std = round(values.std(),2)
-        zero_readings = values[values == 0]
-        self.zero_count = zero_readings.size
-        self.zero_percent = round(100*self.zero_count / self.total_count,2)
 
 def GetAnalytics(vehDf, traDf, Startdate, Enddate):
     vehDf = vehDf.loc[(vehDf['date'] >= str(Startdate)) & (vehDf['date'] <= str(Enddate))]
@@ -104,7 +118,7 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate):
 
 #----------------------------------------------------------------------------------------------------------------------
 
-trainjournDf, vehjournDf = create_Dfs(filepath)
+trainjournDf, vehjournDf = build_dfs_from_file(filepath)
 
 allgeninfoDf, allmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['enddate'])
 befgeninfoDf, befmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])

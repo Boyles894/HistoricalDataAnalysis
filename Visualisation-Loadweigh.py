@@ -41,6 +41,9 @@ def create_Dfs(filepath):
         # Function to extract date from rid
         f = lambda x: datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
         journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
+        
+    t = lambda x: (5.*x)/60.
+    journeyDf['FiveMin'] = journeyDf['FiveMin'].astype(float).apply(t)
 
     #Build complete train/journey dataframe
     trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
@@ -49,7 +52,7 @@ def create_Dfs(filepath):
     vehjournDf = journeyDf.join(vehicleDf, how='right')
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
 
-    return trainjournDf, vehjournDf
+    return trainjournDf, vehjournDf, journeyDf
         
 def select_dates(vehDf, traDf, Startdate, Enddate):
     vehDf = vehDf.loc[(vehDf['date'] >= str(Startdate)) & (vehDf['date'] <= str(Enddate))]
@@ -63,14 +66,15 @@ def get_dir(x):
         return False
     
 def plot_loadweigh(Df, plot_name, save=False):
-    avg = Df.loc[:,'loadweigh.kg'].groupby(Df['FiveMin'].astype(int)).mean()
-    std = Df.loc[:,'loadweigh.kg'].groupby(Df['FiveMin'].astype(int)).std()
-    avg.plot(color='black', linestyle='none', marker='o', yerr = std,)
-    plt.plot(Df['FiveMin'].astype(int), Df['loadweigh.kg'], linestyle='none', marker='x', markersize=0.5, color='red') 
+    avg = Df.iloc[Df.loc[:,'loadweigh.kg'].nonzero()].loc[:,'loadweigh.kg'].groupby(Df['FiveMin']).mean()
+    std = Df.iloc[Df.loc[:,'loadweigh.kg'].nonzero()].loc[:,'loadweigh.kg'].groupby(Df['FiveMin']).std()
+    plt.errorbar(avg.index, avg.iloc[avg.nonzero()], yerr=std,  marker='o', color='black', markersize=4, elinewidth=1, ecolor='dimgrey' )
+    plt.plot(Df['FiveMin'], Df['loadweigh.kg'], linestyle='none', marker='x', markersize=0.7, color='red') 
     plt.grid()
     plt.ylim(0,avg.max()+(avg.max()/4))
+    plt.xticks(np.arange(Df['FiveMin'].min().astype(int)-1, 25))
     plt.ylabel('Loadweigh (kg)')
-    plt.xlabel('Time of day in 5 minute intervals')
+    plt.xlabel('Time of day (24h clock)')
     plt.title(plot_name)
     if save==True:
         plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\ '+plot_name+'.png')
@@ -79,14 +83,15 @@ def plot_loadweigh(Df, plot_name, save=False):
     
     
 def plot_weekday(Df, plot_name):
-    avg = Df.loc[:,'loadweigh.kg'].groupby(Df['FiveMin'].astype(int)).mean()
-    std = Df.loc[:,'loadweigh.kg'].groupby(Df['FiveMin'].astype(int)).std()
-    plt.plot(Df['FiveMin'].astype(int), Df['loadweigh.kg'], linestyle='none', marker='x', color='mediumpurple', markersize=1.5)
-    avg.iloc[avg.nonzero()].plot(yerr = std, linestyle='none', color='navy', marker='o')
+    avg = Df.iloc[Df.loc[:,'loadweigh.kg'].nonzero()].loc[:,'loadweigh.kg'].groupby(Df['FiveMin']).mean()
+    std = Df.iloc[Df.loc[:,'loadweigh.kg'].nonzero()].loc[:,'loadweigh.kg'].groupby(Df['FiveMin']).std()
+    plt.errorbar(avg.index, avg.iloc[avg.nonzero()], yerr=std, linestyle='none', marker='o', color='navy', markersize=4, elinewidth=1, ecolor='dimgrey' )
+    plt.plot(Df['FiveMin'], Df['loadweigh.kg'], linestyle='none', marker='x', markersize=1.5, color='mediumpurple')
     plt.grid()
     plt.ylim(0,avg.max()+(avg.max()/4))
+    plt.xticks(np.arange(Df['FiveMin'].min().astype(int)-1, 25))
     plt.ylabel('Loadweigh (kg)')
-    plt.xlabel('Time of day in 5 minute intervals') 
+    plt.xlabel('Time of day (24h clock)') 
     plt.title(plot_name)
     
 def create_weekday_plots(save=False):
@@ -99,9 +104,28 @@ def create_weekday_plots(save=False):
                 plt.show()
             except KeyError:
                 pass
+            
+def create_multiday_plots(save=False):
+    for station in plots:
+        for day in config['weekdays']:
+            try:
+                avg = weekday_plots[station+'_'+day].iloc[weekday_plots[station+'_'+day].loc[:,'loadweigh.kg'].nonzero()].loc[:,'loadweigh.kg'].groupby(weekday_plots[station+'_'+day]['FiveMin']).mean()
+                avg.plot( marker='x', linestyle='none', label=day)
+            except KeyError:
+                pass
+        plt.ylim(0,6000)
+        plt.grid()
+        plt.xticks(np.arange(plots[station]['FiveMin'].min().astype(int)-1, 25))
+        plt.ylabel('Loadweigh (kg)')
+        plt.xlabel('Time of day (24h clock)')
+        plt.title(station)
+        plt.legend()
+        if save == True:
+            plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\\'+station+ '\\'+station+'.png')
+        plt.show()            
 #---------------------------------------------------------------------------------------------------------------------------
 
-trainjournDf, vehjournDf = create_Dfs(filepath)
+trainjournDf, vehjournDf, journeyDf = create_Dfs(filepath)
 
 
 select_dates(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])
@@ -115,10 +139,10 @@ for station in config['stations']:
         plots['southbound'+station] = plots[station].loc[plots[station]['northbound']==False]
         del plots[station]
         
-plot_loadweigh(plots['VICTRIC'], 'London Victoria')   
-plot_loadweigh(plots['BRGHTN'], 'Brighton', )    
-plot_loadweigh(plots['northboundGTWK'], 'Gatwick Northbound',)    
-plot_loadweigh(plots['southboundGTWK'], 'Gatwick Southbound',)
+#plot_loadweigh(plots['VICTRIC'], 'London Victoria line', )   
+#plot_loadweigh(plots['BRGHTN'], 'Brighton line', )    
+#plot_loadweigh(plots['northboundGTWK'], 'Gatwick Northbound line',)    
+#plot_loadweigh(plots['southboundGTWK'], 'Gatwick Southbound line',)
         
 
 weekday_plots = {}
@@ -130,21 +154,8 @@ for station in plots:
             del weekday_plots[station+'_'+day]
 
 
-for station in plots:
-    for day in config['weekdays']:
-        try:
-            avg = weekday_plots[station+'_'+day].loc[:,'loadweigh.kg'].groupby(weekday_plots[station+'_'+day]['FiveMin'].astype(int)).mean()
-            avg.iloc[avg.nonzero()].plot(linestyle='none', marker='x', label=day)
-        except KeyError:
-            pass
-    plt.ylim(0,6000)
-    plt.ylabel('loadweigh')
-    plt.title(station)
-    plt.legend()
-#    plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\\'+station+ '\\'+station+'.png')
-    plt.show()
-    
-   
+create_weekday_plots()    
+create_multiday_plots() 
 
 
 

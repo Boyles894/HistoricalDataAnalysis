@@ -186,12 +186,11 @@ def filter_df_by_date(df, start_date,end_date):
 
 
 
-def GetAnalytics(vehDf, traDf, Startdate, Enddate, metric):
+def build_df_descriptives(df, Startdate, Enddate, metric):
     #vehDf = vehDf.loc[(vehDf['date'] >= str(Startdate)) & (vehDf['date'] <= str(Enddate))]
     #traDf = traDf.loc[(traDf['date'] >= str(Startdate)) & (traDf['date'] <= str(Enddate))]
-    vehDf = filter_df_by_date(vehDf,Startdate,Enddate)
-    traDf = filter_df_by_date(traDf,Startdate,Enddate)
-    
+    df = filter_df_by_date(df, Startdate, Enddate)
+
     # geninfoDf = pd.DataFrame(columns= ('Parameter Name', 'Value'))
     # geninfoDf.loc[geninfoDf.shape[0]+1] = ['No. of Days With Data' , traDf.date.nunique()]
     # geninfoDf.loc[geninfoDf.shape[0]+1] = ['Earliest Date', min(traDf.date).date()]
@@ -211,19 +210,46 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate, metric):
     #     geninfoDf.loc[geninfoDf.shape[0]+1] = ['Trains made up of 4 units all giving '+s ,sum(countsDf == 4)]
     #     geninfoDf.loc[geninfoDf.shape[0]+1] = ['Number of trains missing complete '+ s +' data' ,traDf.shape[0] - (sum(countsDf == 4)+sum(countsDf==8)+sum(countsDf==12))]
 
-    journey_descriptives = JourneyDescriptives(vehDf,metric).descriptives_df
-    metric_descriptives = MetricDescriptives(vehDf[metric]).descriptives_df
-    all_descriptives = pd.concat([metric_descriptives,journey_descriptives])
+    journey_descriptives = JourneyDescriptives(df, metric).descriptives_df
+    metric_descriptives = MetricDescriptives(df[metric]).descriptives_df
+    combined_descriptives = pd.concat([metric_descriptives,journey_descriptives])
 
         # sez =pd.Series()
         # for attr_name in dir(Descriptives(vehDf[metric])):
         #     if attr_name[0] != '_':
-        #         attr_value = getattr(Descriptives(vehDf[metric]), attr_name)
+        #         attr_value = getattr(Descriptives(vehDf[metric]), )
         #         sez.loc[attr_name] = attr_value
         # metric_descriptives = pd.concat([metric_descriptives, sez], axis=1, sort=False)
         # metric_descriptives.rename(index=str, columns={0:metric,}, inplace=True)
 
-    return all_descriptives
+    return combined_descriptives
+
+def get_all_descriptives(config, df):
+    periods = config['periods']
+    metrics = config.get('metrics')
+
+    descriptives = {}
+
+    for metric in metrics:
+
+        descriptives_df = None
+
+        for period in periods:
+            startdate = periods[period]['startdate']
+            enddate = periods[period]['enddate']
+
+            if enddate is None:
+                enddate = datetime.date.today()
+
+            if descriptives_df is None:
+                descriptives_df = build_df_descriptives(df, startdate, enddate, metric)
+                descriptives_df.rename(columns={'value': period}, inplace=True)
+            else:
+                descriptives_df[period] = build_df_descriptives(df, startdate, enddate, metric)['value']
+
+        descriptives[metric] = descriptives_df
+
+    return descriptives
 
 #----------------------------------------------------------------------------------------------------------------------
 diagnostic_log = DiagnosticLog.buildDiagnosticLog(config)
@@ -233,36 +259,19 @@ data_set.loadDataFramesFromFile(datafile)
 
 trainjournDf, vehjournDf = build_frames_from_dataset(data_set)
 
+vehicle_descriptives = get_all_descriptives(config,vehjournDf)
+train_descriptives = get_all_descriptives(config,trainjournDf)
+
 #trainjournDf, vehjournDf = build_frames_from_file(datafile)
 
-periods = config['periods']
-metrics = config.get('metrics')
-
-descriptives = {}
-
-for metric in metrics:
-
-    descriptives_df = None
-
-    for period in periods:
-        startdate = periods[period]['startdate']
-        enddate = periods[period]['enddate']
-
-        if enddate is None:
-            enddate = datetime.date.today()
-
-        if descriptives_df is None:
-            descriptives_df = GetAnalytics(vehjournDf,trainjournDf,startdate,enddate,metric)
-            descriptives_df.rename(columns={'value':period},inplace=True)
-        else:
-            descriptives_df[period] = GetAnalytics(vehjournDf,trainjournDf,startdate,enddate,metric)['value']
-
-    descriptives[metric] = descriptives_df
 
 
-#allmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['enddate'])
-#befmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])
-#aftmetric_descriptives = GetAnalytics(vehjournDf, trainjournDf, config['splitdate'], config['enddate'])
+
+
+
+#allmetric_descriptives = build_df_descriptives(vehjournDf, trainjournDf, config['startdate'], config['enddate'])
+#befmetric_descriptives = build_df_descriptives(vehjournDf, trainjournDf, config['startdate'], config['splitdate'])
+#aftmetric_descriptives = build_df_descriptives(vehjournDf, trainjournDf, config['splitdate'], config['enddate'])
   
 #geninfoDf = pd.concat([allgeninfoDf, befgeninfoDf, aftgeninfoDf], axis=1)
 #geninfoDf.columns=['Full Data Range', 'Data before '+str(config['splitdate']), 'Data after '+str(config['splitdate'])]

@@ -224,6 +224,21 @@ data_set.loadDataFramesFromFile(datafile)
 
 trainjournDf, vehjournDf = build_frames_from_dataset(data_set)
 
-vehicle_descriptives = get_all_descriptives(config,vehjournDf)
-train_descriptives = get_all_descriptives(config,trainjournDf)
+#vehicle_descriptives = get_all_descriptives(config,vehjournDf)
+#train_descriptives = get_all_descriptives(config,trainjournDf)
 
+
+#journeyIDs = data_set.journeyDf
+f = lambda x: x in [0,1,2,3,4]
+trainjournDf['WeekDay'] = trainjournDf['DayOfWeek'].apply(f)
+Aggregation = ['RouteSignature','tiplocIndex','WeekDay','FiveMin']
+trainjournDf['Grouping'] = trainjournDf[Aggregation].apply(tuple,axis=1)
+
+a = trainjournDf.groupby(by=['Grouping'])
+count = a['loadweigh.kg'].count().rename('count')
+mean = a['loadweigh.kg'].mean().rename('mean')
+stddev = a['loadweigh.kg'].std().rename('stddev')
+median = a['loadweigh.kg'].median().rename('median')
+
+b = pd.concat([count,mean,median,stddev],axis=1)
+c = b[b['count']>5]

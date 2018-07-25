@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
 import datetime
 import os
 import yaml
@@ -17,7 +16,7 @@ def indexDataFrame(df, indexColumns, retainCols=False):
     else:
         df.set_index(indexColumns, drop=True, inplace=True)
         
-def create_Dfs(filepath):
+def build_frames_from_file(filepath):
 
     #Read in raw dataframes and index columns from datafile
     #Index dataframes accordingly
@@ -55,7 +54,26 @@ def create_Dfs(filepath):
 
     return trainjournDf, vehjournDf, journeyDf
         
-def select_dates(vehDf, traDf, Startdate, Enddate):
-    vehDf = vehDf.loc[(vehDf['date'] >= str(Startdate)) & (vehDf['date'] <= str(Enddate))]
-    traDf = traDf.loc[(traDf['date'] >= str(Startdate)) & (traDf['date'] <= str(Enddate))]
-    return vehDf, traDf
+
+
+def filter_df_by_date(df, start_date,end_date):
+    if 'date' not in df.columns:
+        print('Dataframe has no date column')
+        return df
+
+    mask = (df['date'] >= str(start_date)) & (df['date'] <= str(end_date))
+    return df[mask]
+
+
+
+
+
+
+
+
+
+
+
+
+
+

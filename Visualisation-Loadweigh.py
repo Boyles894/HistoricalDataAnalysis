@@ -72,7 +72,7 @@ def create_multiday_plots(save=False):
         plt.show()            
 #---------------------------------------------------------------------------------------------------------------------------
 
-trainjournDf, vehjournDf, journeyDf = gen.create_Dfs(filepath)
+trainjournDf, vehjournDf, journeyDf = gen.build_frames_from_file(filepath)
 
 plots={}
 for station in config['stations']:

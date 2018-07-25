@@ -1,3 +1,6 @@
+import DataSetProcessing
+import DiagnosticLog
+
 import pandas as pd
 import numpy as np
 import datetime
@@ -139,6 +142,35 @@ def build_frames_from_file(filepath):
 
     return trainjournDf, vehjournDf
 
+def build_frames_from_dataset(dataset):
+
+    #Read in raw dataframes and index columns from datafile
+    #Index dataframes accordingly
+    #The assumption is that the datafile will contain the correct dataframes
+    indexes = dataset.indexes
+    journeyDf = dataset.journeyDf
+    vehicleDf = dataset.vehicleDf
+    trainDf = dataset.trainDf
+
+    # Check to see if journeyDf contains a 'date' column.  If not, generate one from the
+    # UniqueJourneyId (assumed to be the rid).
+    if 'date' in journeyDf.columns.tolist():
+        pass
+    else:
+        # Function to extract date from rid
+        f = lambda x: datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
+        journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
+
+    #Build complete train/journey dataframe
+    trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
+
+    #Build complete vehicle/journey dataframe
+    vehjournDf = journeyDf.join(vehicleDf, how='right')
+    vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+
+    return trainjournDf, vehjournDf
+
+
 def filter_df_by_date(df, start_date,end_date):
     if 'date' not in df.columns:
         print('Dataframe has no date column')
@@ -194,8 +226,14 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate, metric):
     return all_descriptives
 
 #----------------------------------------------------------------------------------------------------------------------
+diagnostic_log = DiagnosticLog.buildDiagnosticLog(config)
 
-trainjournDf, vehjournDf = build_frames_from_file(datafile)
+data_set = DataSetProcessing.DataSet(diagnostic_log)
+data_set.loadDataFramesFromFile(datafile)
+
+trainjournDf, vehjournDf = build_frames_from_dataset(data_set)
+
+#trainjournDf, vehjournDf = build_frames_from_file(datafile)
 
 periods = config['periods']
 metrics = config.get('metrics')

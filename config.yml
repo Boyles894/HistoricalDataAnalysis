@@ -1,14 +1,21 @@
 datafilepath: ./datafiles/
 datafilename: FullDataSet20180720.h5
 
-data_types:
+metrics:
 - loadweigh.kg
 - bluetooth.devices
 - manualcount
 
-startdate : 2000-01-01 
-splitdate : 2018-05-23
-enddate : 2050-01-01
+periods:
+  cddb:
+    startdate : 2016-08-01
+    enddate : 2017-10-11
+  go_live:
+    startdate: 2018-05-23
+    enddate:
+
+
+
 
 stations:
 - VICTRIC

@@ -1,5 +1,5 @@
 datafilepath: ../../datafiles/
-datafilename: FullDataSet20180720.h5
+datafilename: FullDataSet20180726.h5
 
 metrics:
 - loadweigh.kg

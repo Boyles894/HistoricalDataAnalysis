@@ -111,9 +111,8 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate, metric):
 
 #----------------------------------------------------------------------------------------------------------------------
 
-trainjournDf, vehjournDf, journeyDf = gen.build_frames_from_file(datafile)
-trainjournDf.to_csv('../../Tableau/datafiles/trainjournDf.csv')
-vehjournDf.to_csv('../../Tableau/datafiles/vehjournDf.csv')
+trainjournDf, vehjournDf = gen.build_frames_from_file(datafile)
+
 
 periods = config['periods']
 metrics = config.get('metrics')

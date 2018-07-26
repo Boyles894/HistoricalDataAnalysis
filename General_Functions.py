@@ -52,7 +52,7 @@ def build_frames_from_file(filepath):
     vehjournDf = journeyDf.join(vehicleDf, how='right')
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
 
-    return trainjournDf, vehjournDf, journeyDf
+    return trainjournDf, vehjournDf
         
 
 

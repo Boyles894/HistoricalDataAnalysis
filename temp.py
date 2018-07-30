@@ -30,4 +30,11 @@ c = b[b['count']>10]
 
 eight = vehjournDf.loc[vehjournDf['NumberOfVehicles']==8]
 four = vehjournDf.loc[vehjournDf['NumberOfVehicles']==4]
-date = trainjournDf.loc[trainjournDf['date'] == max(trainjournDf['date'])]
+
+total = vehjournDf['Percentage of Loadweigh'].groupby(vehjournDf.loc[:,'sequence']).mean().sum()
+
+
+
+
+
+

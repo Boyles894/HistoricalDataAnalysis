@@ -38,12 +38,25 @@ def build_frames_from_file(filepath):
         f = lambda x: datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
         journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
     
-    #Convert 5 min column to represent an actual time of day    
-    t = lambda x: (5.*x)/60.
-    journeyDf['FiveMin'] = journeyDf['FiveMin'].astype(float).apply(t)
+    #Convert time interval columns to represent an actual time of day    
+    a = lambda x: (5.*x)/60.
+    b = lambda x: (7.*x)/60.
+    c = lambda x: (10.*x)/60.
+    d = lambda x: (12.*x)/60.
+    e = lambda x: (14.*x)/60.
+    i = lambda x: (15.*x)/60.
+    journeyDf['FiveMin'] = journeyDf['FiveMin'].astype(float).apply(a)
+    journeyDf['SevenMin'] = journeyDf['SevenMin'].astype(float).apply(b)
+    journeyDf['TenMin'] = journeyDf['TenMin'].astype(float).apply(c)
+    journeyDf['TwelveMin'] = journeyDf['TwelveMin'].astype(float).apply(d)
+    journeyDf['FourteenMin'] = journeyDf['FourteenMin'].astype(float).apply(e)
+    journeyDf['FifteenMin'] = journeyDf['FifteenMin'].astype(float).apply(i)
     
     # Adds a column that states wether the train is headed north or south
-    journeyDf.loc[:, 'northbound'] = journeyDf['RouteSignature'].apply(get_dir)  
+    journeyDf.loc[:, 'northbound'] = journeyDf['RouteSignature'].apply(get_dir)
+    
+    #Adds one to the sequence to make it clearer what is being represented
+    vehicleDf['sequence'] = vehicleDf['sequence'].astype(int) + 1
 
     #Build complete train/journey dataframe
     trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
@@ -51,6 +64,10 @@ def build_frames_from_file(filepath):
     #Build complete vehicle/journey dataframe
     vehjournDf = journeyDf.join(vehicleDf, how='right')
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+    
+    #add the percentage of the total loadweigh to the vehicle dataframe
+    vehjournDf['Total Loadweigh'] = vehjournDf['loadweigh.kg'].groupby(level=[0,1]).sum()
+    vehjournDf['Percentage of Loadweigh'] = (vehjournDf['loadweigh.kg'] / vehjournDf['Total Loadweigh']) *100
 
     return trainjournDf, vehjournDf
         

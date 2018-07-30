@@ -1,6 +1,17 @@
 datafilepath: ../../datafiles/
 datafilename: FullDataSet20180726.h5
 
+logging:
+    path: ./logs
+    filename: Analytics
+    #filePath kept for backwards compatibility, but prediction client 1.0.7 > uses two variables (above)
+    #filePath: ./diagnostic_logs/PredictionClient/Watchdog
+    maxLoggedVerbosity: 3
+    maxFileLength: 1048576
+    retentionDays: 1
+    consoleOutput: True
+
+
 metrics:
 - loadweigh.kg
 - bluetooth.devices

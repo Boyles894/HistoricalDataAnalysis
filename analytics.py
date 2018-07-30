@@ -1,3 +1,6 @@
+import DataSetProcessing
+import DiagnosticLog
+
 import pandas as pd
 import numpy as np
 import datetime
@@ -8,6 +11,34 @@ import General_Functions as gen
 config_file = os.path.normpath('./config.yml')
 config = yaml.load(open(config_file, 'r'))
 datafile = os.path.normpath(config['datafilepath'] + config['datafilename'])
+
+def build_frames_from_dataset(dataset):
+
+    #Read in raw dataframes and index columns from datafile
+    #Index dataframes accordingly
+    #The assumption is that the datafile will contain the correct dataframes
+    indexes = dataset.indexes
+    journeyDf = dataset.journeyDf
+    vehicleDf = dataset.vehicleDf
+    trainDf = dataset.trainDf
+
+    # Check to see if journeyDf contains a 'date' column.  If not, generate one from the
+    # UniqueJourneyId (assumed to be the rid).
+    if 'date' in journeyDf.columns.tolist():
+        pass
+    else:
+        # Function to extract date from rid
+        f = lambda x: datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
+        journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
+
+    #Build complete train/journey dataframe
+    trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
+
+    #Build complete vehicle/journey dataframe
+    vehjournDf = journeyDf.join(vehicleDf, how='right')
+    vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+
+    return trainjournDf, vehjournDf
 
 class JourneyDescriptives():
     def __init__(self,df,filter_variable = None):
@@ -109,32 +140,54 @@ def GetAnalytics(vehDf, traDf, Startdate, Enddate, metric):
 
     return all_descriptives
 
+
+def build_df_descriptives(df, Startdate, Enddate, metric):
+    df = gen.filter_df_by_date(df, Startdate, Enddate)
+
+    journey_descriptives = JourneyDescriptives(df, metric).descriptives_df
+    metric_descriptives = MetricDescriptives(df[metric]).descriptives_df
+    combined_descriptives = pd.concat([metric_descriptives,journey_descriptives])
+
+    return combined_descriptives
+
+def get_all_descriptives(config, df):
+    periods = config['periods']
+    metrics = config.get('metrics')
+
+    descriptives = {}
+
+    for metric in metrics:
+
+        descriptives_df = None
+
+        for period in periods:
+            startdate = periods[period]['startdate']
+            enddate = periods[period]['enddate']
+
+            if enddate is None:
+                enddate = datetime.date.today()
+
+            if descriptives_df is None:
+                descriptives_df = build_df_descriptives(df, startdate, enddate, metric)
+                descriptives_df.rename(columns={'value': period}, inplace=True)
+            else:
+                descriptives_df[period] = build_df_descriptives(df, startdate, enddate, metric)['value']
+
+        descriptives[metric] = descriptives_df
+
+    return descriptives
+
 #----------------------------------------------------------------------------------------------------------------------
+diagnostic_log = DiagnosticLog.buildDiagnosticLog(config)
 
-trainjournDf, vehjournDf = gen.build_frames_from_file(datafile)
-trainjournDf.to_csv('../../Tableau/datafiles/trainjournDF.csv')
-vehjournDf.to_csv('../../Tableau/datafiles/vehjournDF.csv')
+data_set = DataSetProcessing.DataSet(diagnostic_log)
+data_set.loadDataFramesFromFile(datafile)
 
-periods = config['periods']
-metrics = config.get('metrics')
+trainjournDf, vehjournDf = build_frames_from_dataset(data_set)
 
-descriptives = {}
+vehicle_descriptives = get_all_descriptives(config,vehjournDf)
+train_descriptives = get_all_descriptives(config,trainjournDf)
 
-for metric in metrics:
 
-    descriptives_df = None
 
-    for period in periods:
-        startdate = periods[period]['startdate']
-        enddate = periods[period]['enddate']
 
-        if enddate is None:
-            enddate = datetime.date.today()
-
-        if descriptives_df is None:
-            descriptives_df = GetAnalytics(vehjournDf,trainjournDf,startdate,enddate,metric)
-            descriptives_df.rename(columns={'value':period},inplace=True)
-        else:
-            descriptives_df[period] = GetAnalytics(vehjournDf,trainjournDf,startdate,enddate,metric)['value']
-
-    descriptives[metric] = descriptives_df

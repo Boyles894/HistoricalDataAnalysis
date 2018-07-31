@@ -184,10 +184,12 @@ data_set = DataSetProcessing.DataSet(diagnostic_log)
 data_set.loadDataFramesFromFile(datafile)
 
 trainjournDf, vehjournDf = build_frames_from_dataset(data_set)
+diagnostic_log.writeEntry(7, 'Vehicle and Jopurney Dataframes created', 'Created Dataframes',)
 
 vehicle_descriptives = get_all_descriptives(config,vehjournDf)
+diagnostic_log.writeEntry(7, 'Vehicle Descriptive Dataframe created', 'Created Dataframes',)
 train_descriptives = get_all_descriptives(config,trainjournDf)
-
+diagnostic_log.writeEntry(7, 'Train Descriptive Dataframe created', 'Created Dataframes',)
 
 
 

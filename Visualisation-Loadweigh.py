@@ -1,10 +1,11 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-import datetime
 import os
 import yaml
 import General_Functions as gen
+import DiagnosticLog
+
 pd.options.mode.chained_assignment = None
 
 config_file = os.path.normpath('./config.yml')
@@ -25,6 +26,7 @@ def plot_loadweigh(Df, plot_name, save=False):
     plt.title(plot_name)
     if save==True:
         plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\ '+plot_name+'.png')
+        logging.writeEntry(5, 'Loadweigh plot Saved', 'C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\ '+plot_name+'.png')
     plt.show()
     plt.clf()
     
@@ -48,6 +50,7 @@ def create_weekday_plots(save=False):
                 plot_weekday(weekday_plots[station+'_'+day], station+' on a '+day)
                 if save==True:
                     plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\\'+station+ '\ '+station+' on a '+day+'.png')
+                    logging.writeEntry(5, 'Weekday plot Saved', 'C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\\'+station+ '\ '+station+' on a '+day+'.png') 
                 plt.show()
             except KeyError:
                 pass
@@ -69,10 +72,13 @@ def create_multiday_plots(save=False):
         plt.legend()
         if save == True:
             plt.savefig('C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\\'+station+ '\\'+station+'.png')
+            logging.writeEntry(5, 'Multiday plot Saved', 'C:\\Users\\lwb1u18\\Internship\Analytics Results\Plots\WeekdayPlots\\'+station+ '\\'+station+'.png' )
         plt.show()            
 #---------------------------------------------------------------------------------------------------------------------------
+logging = DiagnosticLog.buildDiagnosticLog(config)
 
-trainjournDf, vehjournDf, journeyDf = gen.build_frames_from_file(filepath)
+trainjournDf, vehjournDf = gen.build_frames_from_file(filepath)
+logging.writeEntry(7, 'Created Dataframes', 'Vehicle and Journey Dataframes Created')
 
 plots={}
 for station in config['stations']:

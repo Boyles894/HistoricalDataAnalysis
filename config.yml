@@ -1,5 +1,5 @@
 datafilepath: ../../datafiles/
-datafilename: FullDataSet20180726.h5
+datafilename: FullDataSet20180808.h5
 
 logging:
     path: ./logs
@@ -9,7 +9,7 @@ logging:
     maxLoggedVerbosity: 5
     maxFileLength: 1048576
     retentionDays: 1
-    consoleOutput: False
+    consoleOutput: True
 
 
 metrics:

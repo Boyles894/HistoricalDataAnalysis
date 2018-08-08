@@ -45,12 +45,18 @@ def build_frames_from_file(filepath):
     d = lambda x: (12.*x)/60.
     e = lambda x: (14.*x)/60.
     i = lambda x: (15.*x)/60.
-    journeyDf['FiveMin'] = journeyDf['FiveMin'].astype(float).apply(a)
-    journeyDf['SevenMin'] = journeyDf['SevenMin'].astype(float).apply(b)
-    journeyDf['TenMin'] = journeyDf['TenMin'].astype(float).apply(c)
-    journeyDf['TwelveMin'] = journeyDf['TwelveMin'].astype(float).apply(d)
-    journeyDf['FourteenMin'] = journeyDf['FourteenMin'].astype(float).apply(e)
-    journeyDf['FifteenMin'] = journeyDf['FifteenMin'].astype(float).apply(i)
+    if 'FiveMin' in journeyDf.columns.tolist():
+        journeyDf['FiveMin'] = journeyDf['FiveMin'].astype(float).apply(a)
+    if 'SevenMin' in journeyDf.columns.tolist():
+        journeyDf['SevenMin'] = journeyDf['SevenMin'].astype(float).apply(b)
+    if 'TenMin' in journeyDf.columns.tolist():
+        journeyDf['TenMin'] = journeyDf['TenMin'].astype(float).apply(c)
+    if 'TwelveMin' in journeyDf.columns.tolist():
+        journeyDf['TwelveMin'] = journeyDf['TwelveMin'].astype(float).apply(d)
+    if 'FourteenMin' in journeyDf.columns.tolist():
+        journeyDf['FourteenMin'] = journeyDf['FourteenMin'].astype(float).apply(e)
+    if 'FifteenMin' in journeyDf.columns.tolist():
+        journeyDf['FifteenMin'] = journeyDf['FifteenMin'].astype(float).apply(i)
     
     # Adds a column that states wether the train is headed north or south
     journeyDf.loc[:, 'northbound'] = journeyDf['RouteSignature'].apply(get_dir)
@@ -72,12 +78,10 @@ def build_frames_from_file(filepath):
     return trainjournDf, vehjournDf
         
 
-
 def filter_df_by_date(df, start_date,end_date):
     if 'date' not in df.columns:
         print('Dataframe has no date column')
         return df
-
     mask = (df['date'] >= str(start_date)) & (df['date'] <= str(end_date))
     return df[mask]
 

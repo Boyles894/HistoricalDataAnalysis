@@ -16,13 +16,10 @@ config_file = os.path.normpath('./config.yml')
 config = yaml.load(open(config_file, 'r'))
 datafile = config['datafilepath']+config['datafilename']
 
-dataframes = {}
 trainjournDf, vehjournDf = gen.build_frames_from_file(datafile)
 
-bank = {}
-bank['train'] = trainjournDf.loc[trainjournDf['BankHoliday']==True]
-bank['veh'] = vehjournDf.loc[vehjournDf['BankHoliday']==True]
+trainjournDf.to_csv('../../Tableau/datafiles/trainjournDF_match2.csv')
+vehjournDf.to_csv('../../Tableau/datafiles/vehjournDF_match2.csv')
 
-school = {}
-school['train'] = trainjournDf.loc[trainjournDf['SchoolHoliday']==True]
-school['veh'] = vehjournDf.loc[vehjournDf['SchoolHoliday']==True]
+a = trainjournDf.loc[trainjournDf['TimetableBand'] == 6]
+b = trainjournDf.loc[trainjournDf['TimetableBand'] == 7]

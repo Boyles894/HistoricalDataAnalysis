@@ -85,7 +85,11 @@ def filter_df_by_date(df, start_date,end_date):
     mask = (df['date'] >= str(start_date)) & (df['date'] <= str(end_date))
     return df[mask]
 
+def remove_zeros(DF):
+    return DF.loc[DF['loadweigh.kg']!=0]
 
+def remove_nan(DF):
+    return DF.loc[DF['loadweigh.kg'].isnull() != True]
 
 
 

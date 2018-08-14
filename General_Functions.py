@@ -65,7 +65,7 @@ def build_frames_from_file(filepath):
     vehicleDf['sequence'] = vehicleDf['sequence'].astype(int) + 1
 
     #Build complete train/journey dataframe
-    trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
+    trainjournDf = pd.concat([journeyDf,trainDf], axis=1)
 
     #Build complete vehicle/journey dataframe
     vehjournDf = journeyDf.join(vehicleDf, how='right')

@@ -1,17 +1,43 @@
 import DataSetProcessing
 import DiagnosticLog
-
 import pandas as pd
 import numpy as np
 import datetime
 import os
 import yaml
+import General_Functions as gen
 
 config_file = os.path.normpath('./config.yml')
 config = yaml.load(open(config_file, 'r'))
 datafile = os.path.normpath(config['datafilepath'] + config['datafilename'])
 
-#filepath = 'C:\\Users\\lwb1u18\\Internship\\datafiles\\fulldata20180720.h5'
+def build_frames_from_dataset(dataset):
+
+    #Read in raw dataframes and index columns from datafile
+    #Index dataframes accordingly
+    #The assumption is that the datafile will contain the correct dataframes
+#    indexes = dataset.indexes
+    journeyDf = dataset.journeyDf
+    vehicleDf = dataset.vehicleDf
+    trainDf = dataset.trainDf
+
+    # Check to see if journeyDf contains a 'date' column.  If not, generate one from the
+    # UniqueJourneyId (assumed to be the rid).
+    if 'date' in journeyDf.columns.tolist():
+        pass
+    else:
+        # Function to extract date from rid
+        f = lambda x: datetime.date(int(x[:4]), int(x[4:6]), int(x[6:8]))
+        journeyDf['date'] = pd.to_datetime(journeyDf.UniqueJourneyId.apply(f))
+
+    #Build complete train/journey dataframe
+    trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort='false')
+
+    #Build complete vehicle/journey dataframe
+    vehjournDf = journeyDf.join(vehicleDf, how='right')
+    vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+
+    return trainjournDf, vehjournDf
 
 class JourneyDescriptives():
     def __init__(self,df,filter_variable = None):
@@ -103,7 +129,15 @@ class MetricDescriptives():
         self.descriptives_df = pd.DataFrame.from_dict(dict_descriptives, orient='index',columns=['value'])
 
 
+def GetAnalytics(vehDf, traDf, Startdate, Enddate, metric):
+    vehDf = gen.filter_df_by_date(vehDf,Startdate,Enddate)
+    traDf = gen.filter_df_by_date(traDf,Startdate,Enddate)
+    
+    journey_descriptives = JourneyDescriptives(vehDf,metric).descriptives_df
+    metric_descriptives = MetricDescriptives(vehDf[metric]).descriptives_df
+    all_descriptives = pd.concat([metric_descriptives,journey_descriptives])
 
+<<<<<<< HEAD
 
 def index_df(df, indexColumns, retainCols=False):
     if retainCols == True:
@@ -184,6 +218,13 @@ def build_df_descriptives(df, Startdate, Enddate, metric):
     df = filter_df_by_date(df, Startdate, Enddate)
     if df.empty:
         return
+=======
+    return all_descriptives
+
+
+def build_df_descriptives(df, Startdate, Enddate, metric):
+    df = gen.filter_df_by_date(df, Startdate, Enddate)
+>>>>>>> master
 
     journey_descriptives = JourneyDescriptives(df, metric).descriptives_df
     metric_descriptives = MetricDescriptives(df[metric]).descriptives_df
@@ -224,11 +265,10 @@ def get_all_descriptives(config, df):
 #----------------------------------------------------------------------------------------------------------------------
 diagnostic_log = DiagnosticLog.buildDiagnosticLog(config)
 
-data_set = DataSetProcessing.DataSet(diagnostic_log)
-data_set.loadDataFramesFromFile(datafile)
+#data_set = DataSetProcessing.DataSet(diagnostic_log)
+#data_set.loadDataFramesFromFile(datafile)
 
-trainjournDf, vehjournDf = build_frames_from_dataset(data_set)
-
+<<<<<<< HEAD
 vehicle_descriptives = get_all_descriptives(config,vehjournDf)
 train_descriptives = get_all_descriptives(config,trainjournDf)
 
@@ -238,8 +278,17 @@ train_descriptives = get_all_descriptives(config,trainjournDf)
 
 #vehicle_descriptives['bluetooth.devices'].to_csv('./outputs/vehicle_desc_bt.csv')
 #train_descriptives['bluetooth.devices'].to_csv('./outputs/train_desc_bt.csv')
+=======
+trainjournDf, vehjournDf = gen.build_frames_from_file(datafile)
+diagnostic_log.writeEntry(7, 'Vehicle and Journey Dataframes created from data set', 'Created Dataframes',)
+>>>>>>> master
 
+vehicle_descriptives = get_all_descriptives(config,vehjournDf)
+diagnostic_log.writeEntry(7, 'Vehicle Descriptive Dataframe created', 'Created Dataframes',)
+train_descriptives = get_all_descriptives(config,trainjournDf)
+diagnostic_log.writeEntry(7, 'Train Descriptive Dataframe created', 'Created Dataframes',)
 
+<<<<<<< HEAD
 #journeyIDs = data_set.journeyDf
 #f = lambda x: x in [0,1,2,3,4]
 #g = lambda y: y[3:] == 'VIC'
@@ -274,5 +323,7 @@ testData = df.loc[df.index[selectedIndexes]]
 
 
 
+=======
+>>>>>>> master
 
 

@@ -29,10 +29,10 @@ def create_avgDf(trainDf, vehDf, non_zero=False, predicted_only=False):
         if predicted_only==True and 'prediction' in Df.columns.tolist():
             Df = gen.remove_nan(Df, 'prediction')
             
-  #      groups = Df.groupby(grouping, sort=False).groups.keys()
-        averages = Df.groupby(grouping, sort=False)['loadweigh.kg'].transform('mean')
-        counts = Df.groupby(grouping, sort=False)['loadweigh.kg'].transform('count')
-        error = Df.groupby(grouping, sort=False)['loadweigh.kg'].transform('sem')
+        groups = Df.groupby(grouping, sort=False)
+        averages = groups['loadweigh.kg'].transform('mean')
+        counts = groups['loadweigh.kg'].transform('count')
+        error = groups['loadweigh.kg'].transform('sem')
         
         avg_frames[name] = pd.DataFrame()
         avg_frames[name]['loadweigh.kg'] = Df['loadweigh.kg']

@@ -22,6 +22,8 @@ def build_frames_from_file(filepath):
     #Index dataframes accordingly
     #The assumption is that the datafile will contain the correct dataframes
     indexes = pd.read_hdf(filepath, 'indexes')
+    trainpredDf = pd.read_hdf(filepath, 'sampleTrainPredictionsDf')
+    indexDataFrame(trainpredDf, indexes.tolist(), retainCols=False)
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
     indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
     vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
@@ -57,7 +59,7 @@ def build_frames_from_file(filepath):
         journeyDf['FourteenMin'] = journeyDf['FourteenMin'].astype(float).apply(e)
     if 'FifteenMin' in journeyDf.columns.tolist():
         journeyDf['FifteenMin'] = journeyDf['FifteenMin'].astype(float).apply(i)
-    
+   
     # Adds a column that states wether the train is headed north or south
     journeyDf.loc[:, 'northbound'] = journeyDf['RouteSignature'].apply(get_dir)
     
@@ -65,18 +67,21 @@ def build_frames_from_file(filepath):
     vehicleDf['sequence'] = vehicleDf['sequence'].astype(int) + 1
 
     #Build complete train/journey dataframe
-    trainjournDf = pd.concat([journeyDf,trainDf], axis=1)
+    trainjournDf = pd.concat([journeyDf,trainDf], axis=1, sort=False)
 
     #Build complete vehicle/journey dataframe
     vehjournDf = journeyDf.join(vehicleDf, how='right')
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
+    
+    #Add Predictions To Dataframes
+    trainjournDf = trainjournDf.join(trainpredDf)
     
     #add the percentage of the total loadweigh to the vehicle dataframe
     vehjournDf['Total Loadweigh'] = vehjournDf['loadweigh.kg'].groupby(level=[0,1]).sum()
     vehjournDf['Percentage of Loadweigh'] = (vehjournDf['loadweigh.kg'] / vehjournDf['Total Loadweigh']) *100
 
     return trainjournDf, vehjournDf
-        
+       
 
 def filter_df_by_date(df, start_date,end_date):
     if 'date' not in df.columns:
@@ -85,11 +90,11 @@ def filter_df_by_date(df, start_date,end_date):
     mask = (df['date'] >= str(start_date)) & (df['date'] <= str(end_date))
     return df[mask]
 
-def remove_zeros(DF):
-    return DF.loc[DF['loadweigh.kg']!=0]
+def remove_zeros(DF, column):
+    return DF.loc[DF[column]!=0]
 
-def remove_nan(DF):
-    return DF.loc[DF['loadweigh.kg'].isnull() != True]
+def remove_nan(DF, column):
+    return DF.loc[DF[column].isnull() != True]
 
 
 

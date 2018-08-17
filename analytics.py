@@ -1,6 +1,5 @@
 import DataSetProcessing
 import DiagnosticLog
-
 import pandas as pd
 import numpy as np
 import datetime
@@ -17,7 +16,7 @@ def build_frames_from_dataset(dataset):
     #Read in raw dataframes and index columns from datafile
     #Index dataframes accordingly
     #The assumption is that the datafile will contain the correct dataframes
-    indexes = dataset.indexes
+#    indexes = dataset.indexes
     journeyDf = dataset.journeyDf
     vehicleDf = dataset.vehicleDf
     trainDf = dataset.trainDf
@@ -180,10 +179,10 @@ def get_all_descriptives(config, df):
 #----------------------------------------------------------------------------------------------------------------------
 diagnostic_log = DiagnosticLog.buildDiagnosticLog(config)
 
-data_set = DataSetProcessing.DataSet(diagnostic_log)
-data_set.loadDataFramesFromFile(datafile)
+#data_set = DataSetProcessing.DataSet(diagnostic_log)
+#data_set.loadDataFramesFromFile(datafile)
 
-trainjournDf, vehjournDf = build_frames_from_dataset(data_set)
+trainjournDf, vehjournDf = gen.build_frames_from_file(datafile)
 diagnostic_log.writeEntry(7, 'Vehicle and Journey Dataframes created from data set', 'Created Dataframes',)
 
 vehicle_descriptives = get_all_descriptives(config,vehjournDf)

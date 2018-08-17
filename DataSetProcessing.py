@@ -6,8 +6,6 @@
 #
 ########################################################################################
 
-import JourneyConstants
-
 import os
 from datetime import datetime
 import numpy as np
@@ -15,7 +13,7 @@ import pandas as pd
 
 #import prediction_client.CddbInterface as CddbInterface
 #import prediction_client.LocationParameter as LocationParameter
-#import prediction_client.JourneyConstants as JourneyConstants
+import JourneyConstants
 
 
 class DataSet:
@@ -29,12 +27,16 @@ class DataSet:
                  diagnosticLog):
         
         self.diagnosticLog = diagnosticLog
-        self.diagnosticLog.writeEntry(1, os.path.basename(__file__), 'Initialising data set...')
+        self.diagnosticLog.info('Initialising data set...', os.path.basename(__file__))
+        #self.diagnosticLog.writeEntry(1, os.path.basename(__file__), 'Initialising data set...')
 
         self.journeyDf = None
         self.vehicleDf = None
         self.trainDf = None
-        self.indexes = None
+        self.baseIndexList = None
+
+        self.sampleVehiclePredictions = None
+        self.sampleTrainPredictions = None
 
     def buildFromActiveDataSet(self,
                                dataSetSpecification,
@@ -64,11 +66,19 @@ class DataSet:
         identifiers_cfg = dataSetSpecification.get('identifiers')
         journeyIdentifiers = identifiers_cfg.get('journey')
 
-        parameters_cfg = dataSetSpecification.get('parametersConfig')
-        journeyParams = parameters_cfg['journeyParams']
-        timeSlots = parameters_cfg['timeSlots']
-        latenessBands = parameters_cfg['latenessBands']
-        timePeriods = parameters_cfg['timePeriods']
+        try:
+            parameters_cfg = dataSetSpecification.get('parametersConfig')
+            journeyParams = parameters_cfg['journeyParams']
+            timeSlots = parameters_cfg['timeSlots']
+            latenessBands = parameters_cfg['latenessBands']
+            timePeriods = parameters_cfg['timePeriods']
+            timetableChanges = parameters_cfg['timetableChanges']
+            timetableChanges = [datetime.strptime(x, '%d/%m/%Y') for x in timetableChanges]
+            self.diagnosticLog.info('Dataset Parameters Acquired', os.path.basename(__file__))
+        except Exception as ex:
+            self.diagnosticLog.writeException(1, os.path.basename(__file__), ex)
+            raise
+
 
         # YAML has an idiosyncrasy with times, so they are expected as strings in the format '%H:%M'
         # This section converts the values to times
@@ -84,16 +94,22 @@ class DataSet:
             if jny.loadingPredictionsRequired(
                     tocsForWhichPredictionsMade) and jny.hasRequiredMetrics(requiredMetrics):
                 try:
-                    journeyLegsDf, vehicleLegsDf = jny.getCalibrationDataFrames(journeyIdentifiers,
-                                                                                journeyParams,
-                                                                                timeSlots,
-                                                                                timePeriods,
-                                                                                latenessBands,
-                                                                                locationParameterList,
-                                                                                activeDataSet)
+					#Code to remove single journey known to cause problems
+                    if jny._uniqueJourneyId == '201807188761106':
+                        pass
+                    else:
+                        journeyLegsDf, vehicleLegsDf = jny.getCalibrationDataFrames(journeyIdentifiers,                                                            journeyParams,
+																					timeSlots,
+																					timePeriods,
+																					timetableChanges,
+																					latenessBands,
+																					locationParameterList,
+																					activeDataSet)
+
 
 
                 except Exception as ex:
+                    self.diagnosticLog.writeException(1, os.path.basename(__file__), ex)
                     raise
 
                 try:
@@ -109,6 +125,8 @@ class DataSet:
 
                 except Exception as ex:
                     raise
+
+        self.diagnosticLog.info('Journey Data Successfully Gathered', os.path.basename(__file__))
 
         if (self.journeyDf is not None) and (self.vehicleDf is not None):
             self.processRawDataFrames(dataSetSpecification)
@@ -128,11 +146,11 @@ class DataSet:
     #     self.processRawDataFrames()
 
     def processRawDataFrames(self, dataSetSpecification):
-        self.indexes = pd.Series(dataSetSpecification['indexColumns'])
+        self.baseIndexList = pd.Series(dataSetSpecification['indexColumns'])
         self.setIndexTypes(dataSetSpecification['indexColumns'])
         #self.diagnosticLog.writeEntry(9, os.path.basename(__file__), 'Index Columns: ' + ','.join(self.indexes.tolist()))
-        self.indexDataFrame(self.journeyDf,self.indexes.tolist(),retainCols=True)
-        self.indexDataFrame(self.vehicleDf,self.indexes.tolist(),retainCols=False)
+        self.indexDataFrame(self.journeyDf, self.baseIndexList.tolist(), retainCols=True)
+        self.indexDataFrame(self.vehicleDf, self.baseIndexList.tolist(), retainCols=False)
         #self.diagnosticLog.writeEntry(9, os.path.basename(__file__), 'Dataframes indexed')
 
 
@@ -151,14 +169,15 @@ class DataSet:
         
         self.trainAggregation(dataSetSpecification['covariates'])
         #self.diagnosticLog.writeEntry(9, os.path.basename(__file__), 'Train dataframe populated: ' + str(len(self.trainDf)) + ' rows')
-
+        self.diagnosticLog.info('Dataframes Successfully Formatted', os.path.basename(__file__))
 
     def saveDataFramesToFile(self, filepath):
 
         #self.diagnosticLog.writeEntry(9, os.path.basename(__file__), 'Saving dataset to: ' + filepath)
 
         try:
-            self.indexes.to_hdf(filepath,'indexes',format='table')
+            indexes = pd.Series(self.baseIndexList)
+            indexes.to_hdf(filepath, 'indexes', format='table')
             self.resetIndexes(self.journeyDf)
             self.journeyDf.to_hdf(filepath, 'journeyDf',format='table')
 
@@ -168,22 +187,40 @@ class DataSet:
             self.resetIndexes(self.trainDf)
             self.trainDf.to_hdf(filepath, 'trainDf',format='table')
 
+            if self.sampleVehiclePredictions is not None:
+                self.resetIndexes(self.sampleVehiclePredictions)
+                self.sampleVehiclePredictions.to_hdf(filepath, 'sampleVehiclePredictionsDf', format='table')
+
+            if self.sampleTrainPredictions is not None:
+                self.resetIndexes(self.sampleTrainPredictions)
+                self.sampleTrainPredictions.to_hdf(filepath,'sampleTrainPredictionsDf', format='table')
+
+            self.diagnosticLog.info('Dataset saved: ' + filepath, os.path.basename(__file__), )
+
         except Exception as ex:
             self.diagnosticLog.writeException(1, 'Failed to save dataset', ex)
             raise
 
-        #self.diagnosticLog.writeEntry(9, os.path.basename(__file__), 'Dataset saved: ' + filepath)
-
 
     def loadDataFramesFromFile(self, filepath):
-        self.indexes = pd.read_hdf(filepath,'indexes')
+        self.baseIndexList = pd.read_hdf(filepath, 'indexes').tolist()
         self.journeyDf = pd.read_hdf(filepath,'journeyDf')
-        self.indexDataFrame(self.journeyDf,self.indexes.tolist(),retainCols=True)
+        self.indexDataFrame(self.journeyDf, self.baseIndexList, retainCols=True)
         self.vehicleDf = pd.read_hdf(filepath,'vehicleDf')
-        self.indexDataFrame(self.vehicleDf,self.indexes.tolist(),retainCols=False)
+        self.indexDataFrame(self.vehicleDf, self.baseIndexList, retainCols=False)
         try:
             self.trainDf = pd.read_hdf(filepath,'trainDf')
-            self.indexDataFrame(self.trainDf,self.indexes.tolist(),retainCols=False)
+            self.indexDataFrame(self.trainDf, self.baseIndexList, retainCols=False)
+        except:
+            pass
+        try:
+            self.sampleVehiclePredictions = pd.read_hdf(filepath, 'sampleVehiclePredictionsDf')
+            self.indexDataFrame(self.sampleVehiclePredictions, self.baseIndexList, retainCols=False)
+        except:
+            pass
+        try:
+            self.sampleTrainPredictions = pd.read_hdf(filepath,'sampleTrainPredictionsDf')
+            self.indexDataFrame(self.sampleTrainPredictions,self.baseIndexList,retainCols = False)
         except:
             pass
 
@@ -195,7 +232,8 @@ class DataSet:
         # Note that one of the leg indexes (TiplocIndex) is used in model calibration
         # and must therefore be retained as a separate column.  Hence for the journey
         # dataframe, the columns are not dropped
-        
+        indexColumns = list(set(indexColumns).intersection(df.columns.tolist()))
+
         if retainCols == True:
             df.set_index(indexColumns, drop=False, inplace=True)
         else:            
@@ -209,8 +247,8 @@ class DataSet:
         # In the case of the journey dataframe, the index columns were not dropped and need to
         # be processed accordingly
         for col in df.columns:
-            if col in self.indexes.tolist():
-                df.drop(col,axis=1,inplace=True)
+             if col in df.index.names:
+                 df.drop(col,axis=1,inplace=True)
         df.reset_index(inplace=True)
 
     def setIndexTypes(self, indexCols):
@@ -275,7 +313,16 @@ class DataSet:
         if method == 'drop':
             if column in df.columns.tolist():
                 df = self._dropNaNFromColumn(df,column)
-                return df
+
+        return df
+
+    def processZeroData(self,df,column, method = 'drop'):
+        if method == 'drop':
+            if column in df.columns.tolist():
+                non_zero_mask = df[column] != 0
+                df = df[non_zero_mask]
+        return df
+
 
     def _dropNaNFromColumn(self,df,column):
         tempDf = pd.DataFrame(index=df.index.copy())
@@ -286,35 +333,42 @@ class DataSet:
 
 
 
-    def prepareModelCalibrationData(self, modelParameters):
+    def prepareModelCalibrationData(self, modelSpec, modelVariables):
+
+        # Calibration dataframe may be indexed differently (e.g. at a vehicle level, sequence is included)
+        self.calibrationIndexList = self.baseIndexList
+
+        # Basis for group-by operations
+        self.grouping = ['RouteSignature','tiplocIndex','MatchedDepartureTime']
+
 
         try:
-            if modelParameters['aggregation'] == 'train':
+            if modelSpec['aggregation'] == 'train':
                 calibrationData = self.journeyDf.join(self.trainDf, how='right')
-            elif modelParameters['aggregation'] == 'vehicle':
+            elif modelSpec['aggregation'] == 'vehicle':
                 calibrationData = self.journeyDf.join(self.vehicleDf, how='right')
-                calibrationData.set_index('sequence', append=True, inplace=True, drop = False)
+                self.calibrationIndexList.append('sequence')
+                self.grouping.append('sequence')
+                #calibrationData.set_index('sequence', append=True, inplace=True, drop = False)
         except Exception as ex:
             self.diagnosticLog.writeEntry(5, 'Combining dataframes',
                                           'Chosen aggregation unavailable')
             raise
 
-        self.calibrationData = calibrationData
-        
-        if 'dependent' in modelParameters:
-            dependentCfg = modelParameters.get('dependent')
+        if 'dependent' in modelVariables:
+            dependentCfg = modelVariables.get('dependent')
         else:
             print('Warning: No Dependent Variable')
             dependentCfg = {}
 
 
-        if 'covariates' in modelParameters:
-            covariatesCfg = modelParameters.get('covariates')
+        if 'covariates' in modelVariables:
+            covariatesCfg = modelVariables.get('covariates')
         else:
             covariatesCfg = {}
 
-        if 'categories' in modelParameters:
-            categoriesCfg = modelParameters.get('categories')
+        if 'categories' in modelVariables:
+            categoriesCfg = modelVariables.get('categories')
         else:
             categoriesCfg = {}
 
@@ -332,6 +386,12 @@ class DataSet:
         for variable in missingValueStrategyList:
             calibrationData = self.processMissingData(calibrationData, variable[0], method=variable[1])
 
+        dependentZeroValueStrategies = self.getZeroValueStrategyList(dependentCfg)
+        covariateZeroValueStrategies = self.getZeroValueStrategyList(covariatesCfg)
+        zeroValueStrategyList = dependentZeroValueStrategies + covariateZeroValueStrategies
+
+        for variable in zeroValueStrategyList:
+            calibrationData = self.processZeroData(calibrationData,variable[0])
 
         variableFilterList = []
         variableFilterList = variableFilterList + self.getVariableFilterList(dependentCfg)
@@ -357,6 +417,40 @@ class DataSet:
                 calibrationData = calibrationData[calibrationData[category].isin(variables)]
                 if len(variables) == 1:
                     categoriesList.remove(category)
+
+        # Set aside test data for each grouping
+        #blocks = [data.sample(frac=0.2,random_state = 200) for _,data in calibrationData.groupby(grouping)]
+        #self.testData = pd.concat(blocks)
+        #self.calibrationData = calibrationData.drop(self.testData.index)
+        try:
+            self.resetIndexes(calibrationData)
+            selectedRows = None
+            for _,data in calibrationData.groupby(self.grouping):
+                if selectedRows is None:
+                    selectedRows = data.sample(frac=0.2,random_state=42).index
+                else:
+                    selectedRows = selectedRows.union(data.sample(frac=0.2,random_state=42).index)
+
+            testData = calibrationData.loc[calibrationData.index[selectedRows]]
+            calibrationData.drop(testData.index)
+
+            self.indexDataFrame(testData,self.calibrationIndexList,True)
+            self.indexDataFrame(calibrationData,self.calibrationIndexList, True)
+        except Exception as ex:
+            pass
+
+        self.testData = testData
+        self.calibrationData = calibrationData
+
+        # # Calculate Averages for dependent variables:
+        # self.averagesDf = calibrationData[self.grouping]
+        # for dependent in dependentsList:
+        #     colName = 'AVG_' +  dependent
+        #     averages = calibrationData.groupby(self.grouping, sort=False)[dependent].transform('mean')
+        #
+        #     self.averagesDf[colName] = averages
+
+
 
         # Select appropriate columns
         try:
@@ -430,6 +524,13 @@ class DataSet:
             if 'missingDataStrategy' in options.keys():
                 missingValueStrategyList.append([variable, options['missingDataStrategy']])
         return missingValueStrategyList
+
+    def getZeroValueStrategyList(self, variablesConfig):
+        zeroValueStrategyList = []
+        for variable, options in variablesConfig.items():
+            if 'zeroValueStrategy' in options.keys():
+                zeroValueStrategyList.append([variable, options['zeroValueStrategy']])
+        return zeroValueStrategyList
 
 
     def getVariableFilterList(self, variablesConfig):

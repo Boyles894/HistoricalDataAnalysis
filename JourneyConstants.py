@@ -60,11 +60,17 @@ TotalSeats = 'seats'
 MaxStandees = 'standing'
 
 MissingMetricValue = -1.0
+#Number of carriages in each unit.
+#Currently fixed for GatEx 387/2.  May be better set in a config file
+UnitLength = 4
 
 # Fields derived from Journey message fields
 UniqueJourneyId = 'UniqueJourneyId'
 RouteSignature = 'RouteSignature'
+PlannedRouteSignature = 'PlannedRouteSignature'
 JourneySignature = 'JourneySignature'
+JourneyLegKey = 'JourneyLegKey'
+ServicePartCancelled = 'ServicePartCancelled'
 DepartureTime = 'DepartureTime'
 HourOfDay = 'HourOfDay'
 DayOfWeek = 'DayOfWeek'
@@ -74,7 +80,12 @@ HasDeparted = 'HasDeparted'
 RouteTimeBand = 'RouteTimeBand'
 NumberOfVehicles = 'NumberOfVehicles'
 LatenessBand = 'LB'
+TimetableBand = 'TimetableBand'
 PSDI = 'PSDI'
+BankHoliday = 'BankHoliday'
+Schoolholiday = 'SchoolHoliday'
+MatchedScheduleTime = 'MatchedScheduleTime'
+MatchedDepartureTime = 'MatchedDepartureTime'
 
 # External event fields.
 ExternalEvent = 'ExternalEvent'

@@ -1,5 +1,5 @@
 datafilepath: ../../datafiles/
-datafilename: FullDataSet20180814.h5
+datafilename: modelTestOutputFull.h5
 
 logging:
     path: ./logs
@@ -15,7 +15,7 @@ logging:
 metrics:
 - loadweigh.kg
 - bluetooth.devices
-- manualcount
+#- manualcount
 
 periods:
   cddb:

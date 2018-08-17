@@ -30,7 +30,7 @@ class JourneyDescriptives():
         if self.days_with_data > 0:
             self.earliest_date = min(df.date).date()
             self.latest_date = max(df.date).date()
-            delta = np.abs((self.earliest_date - self.latest_date).days)
+            delta = np.abs((self.earliest_date - self.latest_date).days) + 1
             self.frac_days_with_data = round(self.days_with_data/delta,2)
         else:
             self.earliest_date = None
@@ -95,8 +95,8 @@ class MetricDescriptives():
         dict_descriptives['Non-zero data (%)'] = self.useful_percent
         dict_descriptives['Mean'] = self.mean
         dict_descriptives['Median'] = self.median
-        dict_descriptives['25th Percential'] = self.firstqpercentile
-        dict_descriptives['75th Percential'] = self.lastqpercentile
+        dict_descriptives['25th Percentile'] = self.firstqpercentile
+        dict_descriptives['75th Percentile'] = self.lastqpercentile
         dict_descriptives['Interquartile Range'] = self.iq_range
         dict_descriptives['Standard Deviation'] = self.std
 
@@ -147,7 +147,7 @@ def build_frames_from_dataset(dataset):
     #Read in raw dataframes and index columns from datafile
     #Index dataframes accordingly
     #The assumption is that the datafile will contain the correct dataframes
-    indexes = dataset.indexes
+    indexes = dataset.baseIndexList
     journeyDf = dataset.journeyDf
     vehicleDf = dataset.vehicleDf
     trainDf = dataset.trainDf
@@ -182,10 +182,12 @@ def filter_df_by_date(df, start_date,end_date):
 
 def build_df_descriptives(df, Startdate, Enddate, metric):
     df = filter_df_by_date(df, Startdate, Enddate)
+    if df.empty:
+        return
 
     journey_descriptives = JourneyDescriptives(df, metric).descriptives_df
     metric_descriptives = MetricDescriptives(df[metric]).descriptives_df
-    combined_descriptives = pd.concat([metric_descriptives,journey_descriptives])
+    combined_descriptives = pd.concat([journey_descriptives,metric_descriptives])
 
     return combined_descriptives
 
@@ -200,17 +202,20 @@ def get_all_descriptives(config, df):
         descriptives_df = None
 
         for period in periods:
-            startdate = periods[period]['startdate']
-            enddate = periods[period]['enddate']
-
-            if enddate is None:
-                enddate = datetime.date.today()
-
-            if descriptives_df is None:
-                descriptives_df = build_df_descriptives(df, startdate, enddate, metric)
-                descriptives_df.rename(columns={'value': period}, inplace=True)
-            else:
-                descriptives_df[period] = build_df_descriptives(df, startdate, enddate, metric)['value']
+            try:
+                startdate = periods[period]['startdate']
+                enddate = periods[period]['enddate']
+    
+                if enddate is None:
+                    enddate = datetime.date.today()
+    
+                if descriptives_df is None:
+                    descriptives_df = build_df_descriptives(df, startdate, enddate, metric)
+                    descriptives_df.rename(columns={'value': period}, inplace=True)
+                else:
+                    descriptives_df[period] = build_df_descriptives(df, startdate, enddate, metric)['value']
+            except:
+                pass
 
         descriptives[metric] = descriptives_df
 
@@ -224,21 +229,50 @@ data_set.loadDataFramesFromFile(datafile)
 
 trainjournDf, vehjournDf = build_frames_from_dataset(data_set)
 
-#vehicle_descriptives = get_all_descriptives(config,vehjournDf)
-#train_descriptives = get_all_descriptives(config,trainjournDf)
+vehicle_descriptives = get_all_descriptives(config,vehjournDf)
+train_descriptives = get_all_descriptives(config,trainjournDf)
+
+#vehicle_descriptives['loadweigh.kg'].to_csv('./outputs/vehicle_desc.csv')
+#train_descriptives['loadweigh.kg'].to_csv('./outputs/train_desc.csv')
+
+
+#vehicle_descriptives['bluetooth.devices'].to_csv('./outputs/vehicle_desc_bt.csv')
+#train_descriptives['bluetooth.devices'].to_csv('./outputs/train_desc_bt.csv')
 
 
 #journeyIDs = data_set.journeyDf
-f = lambda x: x in [0,1,2,3,4]
-trainjournDf['WeekDay'] = trainjournDf['DayOfWeek'].apply(f)
-Aggregation = ['RouteSignature','tiplocIndex','WeekDay','FiveMin']
-trainjournDf['Grouping'] = trainjournDf[Aggregation].apply(tuple,axis=1)
+#f = lambda x: x in [0,1,2,3,4]
+#g = lambda y: y[3:] == 'VIC'
+#trainjournDf['WeekDay'] = trainjournDf['DayOfWeek'].apply(f)
+#trainjournDf['Down'] = trainjournDf['RouteSignature'].apply(g)
+#Aggregation = ['tiploc','date','FiveMin']
+#trainjournDf['Grouping'] = trainjournDf[Aggregation].apply(tuple,axis=1)
 
-a = trainjournDf.groupby(by=['Grouping'])
-count = a['loadweigh.kg'].count().rename('count')
-mean = a['loadweigh.kg'].mean().rename('mean')
-stddev = a['loadweigh.kg'].std().rename('stddev')
-median = a['loadweigh.kg'].median().rename('median')
+#a = trainjournDf.groupby(by=['Grouping'])
+#count = a['loadweigh.kg'].count().rename('count')
+#mean = a['loadweigh.kg'].mean().rename('mean')
+#stddev = a['loadweigh.kg'].std().rename('stddev')
+#median = a['loadweigh.kg'].median().rename('median')
 
-b = pd.concat([count,mean,median,stddev],axis=1)
-c = b[b['count']>5]
+#b = pd.concat([count,mean,median,stddev],axis=1)
+#c = b[b['count']>5]
+
+data_set.resetIndexes(data_set.journeyDf)
+df = data_set.journeyDf
+gb = df.groupby(['JourneyLegKey'])
+
+selectedIndexes = None
+for _,data in gb:
+    if selectedIndexes is None:
+        selectedIndexes = data.sample(n=1).index
+    else:
+        selectedIndexes = selectedIndexes.union(data.sample(n=1).index)
+        
+testData = df.loc[df.index[selectedIndexes]]
+
+
+
+
+
+
+

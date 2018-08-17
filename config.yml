@@ -1,6 +1,6 @@
-datafilepath: ./datafiles/
-datafilename: FullDataSet20180720.h5
-
+#datafilepath: ./datafiles/
+datafilepath: D:\Cloud\OneDrive - University of Southampton\Projects\Current\TOC_15\Git\dev\prediction_client\test_environment\datafiles\
+datafilename: modelTestOutput.h5
 logging:
     path: ./logs
     filename: Analytics
@@ -19,11 +19,50 @@ metrics:
 
 periods:
   cddb:
-    startdate : 2016-08-01
+    startdate : 2016-05-01
     enddate : 2017-10-11
-  go_live:
-    startdate: 2018-05-23
-    enddate:
+  live_week_1:
+    startdate: 2018-05-24
+    enddate: 2018-05-30
+  live_week_2:
+    startdate: 2018-05-31
+    enddate: 2018-06-06
+  live_week_3:
+    startdate: 2018-06-07
+    enddate: 2018-06-13
+  live_week_4:
+    startdate: 2018-06-14
+    enddate: 2018-06-20
+  live_week_5:
+    startdate: 2018-06-21
+    enddate: 2018-06-27
+  live_week_6:
+    startdate: 2018-06-28
+    enddate: 2018-07-04
+  live_week_7:
+    startdate: 2018-07-05
+    enddate: 2018-07-11
+  live_week_8:
+    startdate: 2018-07-12
+    enddate: 2018-07-18
+  live_week_9:
+    startdate: 2018-07-19
+    enddate: 2018-07-25
+  live_month_1:
+    startdate: 2018-05-24
+    enddate: 2018-06-23
+  live_month_2:
+    startdate: 2018-06-24
+    enddate: 2018-07-23
+  all_live:
+    startdate: 2018-05-24
+    enddate: 2018-07-25
+  all:
+    startdate: 2016-05-01
+    enddate: 2018-07-25
+    
+  
+      
 
 stations:
 - VICTRIC

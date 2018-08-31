@@ -1,5 +1,5 @@
 datafilepath: ../../datafiles/
-datafilename: modelTestOutputFull.h5
+datafilename: FullDataSet20180814.h5
 
 logging:
     path: ./logs

@@ -4,11 +4,6 @@ import os
 import yaml
 import General_Functions as gen
 
-config_file = os.path.normpath('./config.yml')
-config = yaml.load(open(config_file, 'r'))
-
-filepath = config['datafilepath']+config['datafilename']
-trainjournDf, vehjournDf = gen.build_frames_from_file(filepath)
 
 def rmse(predictions, targets):
     return np.sqrt(((predictions - targets) ** 2)).mean()
@@ -24,6 +19,7 @@ def create_avgDf(trainDf, vehDf, non_zero=False, predicted_only=False):
         
         if non_zero==True:
             Df = gen.remove_zeros(Df, 'loadweigh.kg')
+            
             Df = gen.remove_nan(Df, 'loadweigh.kg')
             
         if predicted_only==True and 'prediction' in Df.columns.tolist():
@@ -46,9 +42,21 @@ def create_avgDf(trainDf, vehDf, non_zero=False, predicted_only=False):
             avg_frames[name]['prediction'] = Df['prediction'] 
             
     return avg_frames
+
+#######################################################################################
+
+config_file = os.path.normpath('./config.yml')
+config = yaml.load(open(config_file, 'r'))
+
+filepath = config['datafilepath']+config['datafilename']
+trainjournDf, vehjournDf = gen.build_frames_from_file(filepath)
         
 averages_frames = create_avgDf(trainjournDf, vehjournDf, non_zero=True, predicted_only=True)
 #averagesDf['Train'].to_csv('../../Tableau/datafiles/train_averages_nonzero.csv')
 #averagesDf['Vehicle'].to_csv('../../Tableau/datafiles/vehicle_averages_nonzero.csv')
-#vehjournDf.to_csv('../../Tableau/datafiles/vehjourn_20180814.csv')
-#trainjournDf.to_csv('../../Tableau/datafiles/trainjourn_20180814.csv')
+#vehjournDf.to_csv('../../Tableau/datafiles/vehjourn_20180822_big.csv')
+#trainjournDf.to_csv('../../Tableau/datafiles/trainjourn_20180822_big.csv')
+
+
+non_adjusted = vehjournDf[vehjournDf.index.droplevel(2).isin(trainjournDf.loc[trainjournDf['adjustedFigure']==False].index)]
+non_adjusted.to_csv('../../Tableau/datafiles/no_adjusted.csv')

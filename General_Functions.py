@@ -22,8 +22,8 @@ def build_frames_from_file(filepath):
     #Index dataframes accordingly
     #The assumption is that the datafile will contain the correct dataframes
     indexes = pd.read_hdf(filepath, 'indexes')
-    trainpredDf = pd.read_hdf(filepath, 'sampleTrainPredictionsDf')
-    indexDataFrame(trainpredDf, indexes.tolist(), retainCols=False)
+#    trainpredDf = pd.read_hdf(filepath, 'sampleTrainPredictionsDf')
+#    indexDataFrame(trainpredDf, indexes.tolist(), retainCols=False)
     journeyDf = pd.read_hdf(filepath, 'journeyDf')
     indexDataFrame(journeyDf, indexes.tolist(), retainCols=True)
     vehicleDf = pd.read_hdf(filepath, 'vehicleDf')
@@ -74,7 +74,7 @@ def build_frames_from_file(filepath):
     vehjournDf.set_index('sequence', append=True, inplace=True, drop = False)
     
     #Add Predictions To Dataframes
-    trainjournDf = trainjournDf.join(trainpredDf)
+#    trainjournDf = trainjournDf.join(trainpredDf)
     
     #add the percentage of the total loadweigh to the vehicle dataframe
     vehjournDf['Total Loadweigh'] = vehjournDf['loadweigh.kg'].groupby(level=[0,1]).sum()
